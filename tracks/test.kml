@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+	<Document>
+		<name>GPS Visualizer data</name>
+		<Style id="waypoint">
+			<IconStyle>
+				<color>ffffffff</color>
+				<scale>1</scale>
+				<Icon><href>http://maps.google.com/mapfiles/kml/pal4/icon56.png</href></Icon>
+				<hotSpot x="0.5" xunits="fraction" y="0.5" yunits="fraction" />
+			</IconStyle>
+			<BalloonStyle>
+				<text><![CDATA[<h3>$[name]</h3> <div style="margin-top:8px;">$[description]</div>]]></text>
+			</BalloonStyle>
+		</Style>
+		<Style id="track">
+			<LineStyle>
+				<color>ff0000ff</color>
+				<width>3</width>
+			</LineStyle>
+		</Style>
+		<Style id="polygon">
+			<LineStyle>
+				<color>ff9900ff</color>
+				<width>3</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>409900ff</color>
+				<colorMode>normal</colorMode>
+				<fill>1</fill>
+				<outline>1</outline>
+			</PolyStyle>
+		</Style>
+		<Folder>
+			<name>Waypoints</name>
+			<Placemark>
+				<name>Home</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>4.9039686,52.3729464</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>me2</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>4.9036682,52.3768608</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>work</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>4.9053741,52.3971557</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>restpoint 2</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Style>
+					<IconStyle><color>ffffffff</color><scale>0.5</scale><Icon><href>http://maps.gpsvisualizer.com/google_maps/icons/garmin/gpsmap/Restaurant.png</href></Icon><hotSpot x="0.5" xunits="fraction" y="0.5" yunits="fraction" /></IconStyle>
+				</Style>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>4.9103737,52.3934109</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>restpoint 1</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Style>
+					<IconStyle><color>ffffffff</color><scale>0.5</scale><Icon><href>http://maps.gpsvisualizer.com/google_maps/icons/garmin/gpsmap/Restaurant.png</href></Icon><hotSpot x="0.5" xunits="fraction" y="0.5" yunits="fraction" /></IconStyle>
+				</Style>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>4.9000686,52.3805734</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>me1</name>
+				<description></description>
+				<styleUrl>#waypoint</styleUrl>
+				<Point>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>4.9035931,52.3768043</coordinates>
+				</Point>
+			</Placemark>
+		</Folder>
+		<Folder>
+			<name>Tracks</name>
+			<Placemark>
+				<name>track 1</name>
+				<description>Length: 3.563 km (2.214 mi)</description>
+				<visibility>1</visibility>
+				<styleUrl>#track</styleUrl>
+				<Style>
+					<LineStyle><color>ff00ff80</color><width>3</width></LineStyle>
+				</Style>
+				<LineString>
+					<extrude>0</extrude>
+					<tessellate>1</tessellate>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>
+						4.9039310,52.3729726 4.9033731,52.3732903 4.9031264,52.3734443 4.9030674,52.3735294 4.9029762,52.3735163 4.9021071,52.3738373 4.9014741,52.3740731 4.9020052,52.3751243 4.9024236,52.3759856 4.9025631,52.3761363 4.9026918,52.3762116 4.9029762,52.3763688 4.9032497,52.3765391 4.9035984,52.3768305 4.9037057,52.3768927 4.9038237,52.3768665 4.9038988,52.3770205 4.9039578,52.3770990 4.9041241,52.3773512 4.9045479,52.3777704 4.9048054,52.3779014 4.9049771,52.3780258 4.9050575,52.3781142 4.9051380,52.3783336 4.9045694,52.3785727 4.9042583,52.3787200 4.9028260,52.3792374 4.9004978,52.3800921 4.8996395,52.3803966 4.8993766,52.3804883 4.8995537,52.3806782 4.9031854,52.3821648 4.9035877,52.3822958 4.9060446,52.3833894 4.9062860,52.3835040 4.9063557,52.3835793 4.9063718,52.3836874 4.9063772,52.3843914 4.9064362,52.3845125 4.9065381,52.3846795 4.9069351,52.3849905 4.9072248,52.3853409 4.9075252,52.3858091 4.9076861,52.3860219 4.9078041,52.3861889 4.9075735,52.3862216 4.9069136,52.3862609 4.9063879,52.3862806 4.9062270,52.3864344 4.9057388,52.3874101 4.9050736,52.3887033 4.9049824,52.3887655 4.9045157,52.3897411 4.9042743,52.3900652 4.9040222,52.3905923 4.9035072,52.3916334 4.9026918,52.3932669 4.9026167,52.3933946 4.9026436,52.3934895 4.9027777,52.3936270 4.9028528,52.3936794 4.9021769,52.3939183 4.9031317,52.3948677 4.9039471,52.3956598 4.9052614,52.3969299 4.9053901,52.3970674 
+					</coordinates>
+				</LineString>
+			</Placemark>
+			<Placemark>
+				<name>track 2</name>
+				<description>Length: 5.016 km (3.117 mi)</description>
+				<visibility>1</visibility>
+				<styleUrl>#track</styleUrl>
+				<LineString>
+					<extrude>0</extrude>
+					<tessellate>1</tessellate>
+					<altitudeMode>clampedToGround</altitudeMode>
+					<coordinates>
+						4.9052775,52.3970837 4.9051809,52.3969790 4.9021983,52.3981312 4.9019730,52.3981770 4.9009860,52.3984912 4.9002457,52.3987596 4.8990548,52.3992768 4.8975956,52.3998659 4.8969090,52.4001736 4.8968124,52.4002980 4.8932397,52.4019738 4.8921561,52.4010639 4.8919201,52.4010573 4.8917162,52.4010639 4.8916626,52.4010115 4.8912549,52.4006515 4.8908365,52.3991131 4.8907399,52.3966189 4.8930144,52.3945632 4.8956537,52.3902420 4.8955035,52.3898492 4.8930842,52.3881173 4.8926228,52.3880485 4.8923224,52.3879830 4.8923546,52.3878554 4.8924351,52.3876687 4.8929125,52.3865850 4.8931754,52.3860252 4.8933685,52.3854915 4.8934221,52.3851215 4.8933363,52.3847908 4.8932022,52.3844568 4.8931164,52.3841458 4.8930949,52.3838675 4.8931861,52.3835270 4.8932666,52.3832781 4.8933846,52.3830096 4.8935294,52.3829048 4.8938835,52.3828754 4.8942000,52.3828688 4.8944950,52.3828164 4.8947310,52.3827313 4.8949724,52.3826036 4.8951012,52.3825152 4.8960507,52.3818472 4.8963833,52.3816671 4.8967642,52.3814117 4.8973596,52.3811923 4.8976278,52.3811236 4.8993337,52.3804981 4.8987329,52.3798334 4.8979282,52.3789918 4.8972040,52.3783958 4.8968714,52.3781568 4.8971343,52.3778981 4.8975366,52.3775477 4.8981535,52.3771580 4.8985398,52.3768796 4.8989689,52.3766799 4.8991460,52.3766930 4.8993015,52.3766864 4.8994571,52.3766733 4.8995376,52.3766504 4.8996663,52.3765685 4.8998326,52.3764572 4.8999184,52.3763557 4.9001491,52.3761788 4.9008304,52.3755664 4.9010020,52.3754092 4.9010235,52.3752455 4.9009162,52.3749671 4.9007714,52.3746953 4.9005729,52.3744824 4.9005139,52.3743842 4.9012756,52.3741189 4.9020857,52.3738143 4.9028903,52.3735098 4.9030459,52.3734967 4.9032980,52.3733100 4.9038666,52.3729890 
+					</coordinates>
+				</LineString>
+			</Placemark>
+		</Folder>
+	</Document>
+</kml>
