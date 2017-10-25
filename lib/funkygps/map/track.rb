@@ -23,9 +23,9 @@ module FunkyGPS
                 (distance/10.0).round/100.0
             end
             # returns the track as svg (path) to place on the svg canvas
-            def to_svg
+            def to_svg(rotate:nil)
                 trackpoints = @trackpoints.map{|tp| %{#{tp.displayX} #{tp.displayY}}}.join(' ')
-                %{<g><path d="M #{trackpoints}" style="fill:none;stroke:black"/></g>\n}
+                %{<g#{rotate ? %{ transform="rotate(#{rotate[:degrees]}, #{rotate[:x]}, #{rotate[:y]})"}:%{}}><path d="M #{trackpoints}" style="fill:none;stroke:black"/></g>\n}
             end
         end
     end

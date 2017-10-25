@@ -90,11 +90,12 @@ end
 
 gps = FunkyGPS.loadWith(epd_path: '/tmp/epd')
 #gps.simulate(track:'track 1')
-gps.map.simulateToGif(track:'track 1')
+#gps.map.simulateToGif(track:'track 1')
 #gps.toggleFullscreen
 #gps.screen.update
 #gps.screen.to_ascii
-#File.open('test.svg', 'w+') {|f| f.write gps.map.to_svg}
+gps.screen.to_file
+File.open('test.svg', 'w+') {|f| f.write gps.map.to_svg}
 STDERR.puts "the track distances in meters:\n#{gps.map.tracks.map{|tr| %{\t#{tr.name}:#{tr.distanceInMeters} meters\n}}.join('')}"
 STDERR.puts "the track distances in km:\n#{gps.map.tracks.map{|tr| %{\t#{tr.name}:#{tr.distanceInKilometers} km\n}}.join('')}"
 STDERR.puts "the maps square distance is #{gps.map.realWidth.round} meters by #{gps.map.realHeight.round} meters"

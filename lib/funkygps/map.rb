@@ -10,15 +10,13 @@ module FunkyGPS
             System.new(*args)
         end
         class System
-            attr_reader :controlcenter, :gps, :width, :height, :tracks, :waypoints, :x, :y, :signal, :viewbox
+            attr_reader :controlcenter, :gps, :tracks, :waypoints, :x, :y, :signal, :viewbox
             def initialize(controlcenter:)
                 @controlcenter = controlcenter
-                @width = controlcenter.screen.width
-                @height = controlcenter.screen.height
                 @tracks = []
                 @waypoints = []
                 @signal = Signal.new(map:self)
-                @viewbox = ViewBox.new(map: self)
+                @viewbox = ViewBox.new(map: self, controlcenter: controlcenter)
             end
             # Will search for all track files and load them
             def loadTracks(folder:)
@@ -115,12 +113,23 @@ module FunkyGPS
             def to_svg
                 out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
                 out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
-                out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@controlcenter.fullscreen ? '2' : '3'}" width="#{@width}px" height="#{@height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
+                out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@controlcenter.fullscreen ? '2' : '3'}" width="#{@controlcenter.screen.width}px" height="#{@controlcenter.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
                 out << @signal.to_svg
+                #out << @tracks.map { |track| track.to_svg(rotate:{degrees: 90, x: @signal.lastPos.displayX, y: @signal.lastPos.displayY}) }.join("\n")
                 out << @tracks.map { |track| track.to_svg }.join("\n")
                 out << @waypoints.map { |wp| wp.to_svg }.join("\n")
                 out << %{</svg>}
                 out
+            end
+
+            # width in pixels
+            def width
+                maxX - minX
+            end
+
+            # height in pixels
+            def height
+                maxY - minY
             end
 
             # max value of all display x
@@ -176,21 +185,22 @@ module FunkyGPS
         end
     end
     class ViewBox
-        attr_reader :width, :height, :map
-        def initialize(map:)
+        attr_reader :map, :controlcenter
+        def initialize(map:, controlcenter:)
             @map = map
+            @controlcenter = controlcenter
         end
         def width
-            @map.width
+            @controlcenter.screen.width
         end
         def height
-            @map.height
+            @controlcenter.screen.height
         end
         def x
-            @map.signal.lastPos.displayX - (@map.width/2)
+            @map.signal.lastPos.displayX - (width/2)
         end
         def y
-            @map.signal.lastPos.displayY - (@map.height/2)
+            @map.signal.lastPos.displayY - (height/2)
         end
         def realWidth
             @map.realWidth / @map.width * width
