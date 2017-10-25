@@ -47,6 +47,26 @@ module FunkyGPS
                 loader.tracks.each {|track| addTrack(track: track)}
             end
 
+            # Create an animated gif from the track
+            def simulateToGif(track:, name: 'track.gif', delay: 100)
+                if track = @tracks.find{|t| t.name === track}
+                    STDERR.puts "creating gif animation of track '#{track.name}' to #{name} with #{delay} delay"
+                    list = Magick::ImageList.new
+                    oldTrack = @signal.clearSignal
+                    addSignal(trackpoint:track.trackpoints.shift)
+                    addSignal(trackpoint:track.trackpoints.shift)
+                    list.read controlcenter.screen.to_image()
+                    track.trackpoints.each do |trackpoint|
+                        addSignal(trackpoint:trackpoint)
+                        list.read controlcenter.screen.to_image
+                    end
+                    @signal.restoreTrack(track: oldTrack)
+                    list.each {|image| image.delay = delay }
+                    list.write(name)
+                else
+                    raise "track @{track} not found"
+                end
+            end
             # Simulate a track by moving from start to end trackpoints
             # at a x second interval, updating the screen
             def simulate(track:, name:'ascii')

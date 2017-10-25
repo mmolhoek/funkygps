@@ -1,7 +1,7 @@
 =begin
 = funkygps
 
-O yes, here we go...
+FunkyGPS is a gps application that can be used on a Rasberry PI with a PaPiRus display and a gps module attached.
 
 == Contributing to funkygps
 
@@ -10,8 +10,6 @@ O yes, here we go...
 * Fork the project.
 * Start a feature/bugfix branch.
 * Commit and push until you are happy with your contribution.
-* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
-* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
 == Copyright
 
@@ -21,18 +19,19 @@ Copyright (c) 2017 Mischa Molhoek. See LICENSE.txt for further details.
 module FunkyGPS
     # Sets the default metrics unit
     DEFAULTMETRICS = :meters
+    # Sets the default folder, where FunkyGPS will look for tracks
     DEFAULTTRACKFOLDER = './tracks/'
+    # FunkyGPS base error
     class Exception < ::StandardError; end
+    # FunkyGPS error that is raised when the gps file type is not supported
     class ExtentionNotSupported < FunkyGPS::Exception; end
+    # FunkyGPS error when the is no map available
     class NoMapFound < FunkyGPS::Exception; end
 end
 
 require_relative 'funkygps/screen'
 require_relative 'funkygps/map'
 #require_relative 'funkygps/menu'
-
-# extend extends the class
-# include extends the instance of the class
 
 
 module FunkyGPS
@@ -91,9 +90,9 @@ end
 
 gps = FunkyGPS.loadWith(epd_path: '/tmp/epd')
 #gps.simulate(track:'track 1')
-gps.map.simulate(track:'track 1', name:'display.png')
+gps.map.simulateToGif(track:'track 1')
 #gps.toggleFullscreen
-gps.screen.update
+#gps.screen.update
 #gps.screen.to_ascii
 #File.open('test.svg', 'w+') {|f| f.write gps.map.to_svg}
 STDERR.puts "the track distances in meters:\n#{gps.map.tracks.map{|tr| %{\t#{tr.name}:#{tr.distanceInMeters} meters\n}}.join('')}"

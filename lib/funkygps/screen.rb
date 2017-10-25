@@ -80,6 +80,12 @@ module FunkyGPS
             t.path
         end
 
+        # Create an image of display, used to create an gif animation of a route,
+        # adding an image to the gif for each trackpoint.
+        def to_image()
+            embed_svg(svg: to_svg)
+        end
+
         # Create ascii art or image of display for debugging purpose
         def to_file(name: 'display.png')
             if name === 'ascii'
