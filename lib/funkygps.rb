@@ -90,6 +90,7 @@ end
 
 gps = FunkyGPS.loadWith(epd_path: '/tmp/epd')
 #gps.simulate(track:'track 1')
+#gps.simulateToFile(track:'track 1')
 #gps.map.simulateToGif(track:'track 1')
 #gps.toggleFullscreen
 #gps.screen.update

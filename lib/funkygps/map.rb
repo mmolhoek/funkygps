@@ -45,7 +45,26 @@ module FunkyGPS
                 loader.tracks.each {|track| addTrack(track: track)}
             end
 
-            # Create an animated gif from the track
+            # Simulate a track by moving from start to end trackpoints
+            # at a x second interval on the PaPiRus display
+            def simulate(track:)
+                if track = @tracks.find{|t| t.name === track}
+                    oldTrack = @signal.clearSignal
+                    addSignal(trackpoint:track.trackpoints.shift)
+                    addSignal(trackpoint:track.trackpoints.shift)
+                    controlcenter.screen.update
+                    track.trackpoints.each do |trackpoint|
+                        addSignal(trackpoint:trackpoint)
+                        controlcenter.screen.update
+                    end
+                    @signal.restoreTrack(track: oldTrack)
+                else
+                    raise "track @{track} not found"
+                end
+            end
+
+            # Simulate a track by moving from start to end trackpoints
+            # at a x second interval, creating an animated gif of the result
             def simulateToGif(track:, name: 'track.gif', delay: 100)
                 if track = @tracks.find{|t| t.name === track}
                     STDERR.puts "creating gif animation of track '#{track.name}' to #{name} with #{delay} delay"
@@ -66,17 +85,18 @@ module FunkyGPS
                 end
             end
             # Simulate a track by moving from start to end trackpoints
-            # at a x second interval, updating the screen
-            def simulate(track:, name:'ascii')
+            # at a x second interval, updating the screen with an ascii
+            # art representation of the screen
+            def simulateToAscii(track:)
                 if track = @tracks.find{|t| t.name === track}
                     oldTrack = @signal.clearSignal
                     addSignal(trackpoint:track.trackpoints.shift)
                     addSignal(trackpoint:track.trackpoints.shift)
-                    controlcenter.screen.to_file(name:name)
+                    controlcenter.screen.to_file(name:'ascii')
                     sleep 2
                     track.trackpoints.each do |trackpoint|
                         addSignal(trackpoint:trackpoint)
-                        controlcenter.screen.to_file(name:name)
+                        controlcenter.screen.to_file(name:'ascii')
                         sleep 2
                     end
                     @signal.restoreTrack(track: oldTrack)

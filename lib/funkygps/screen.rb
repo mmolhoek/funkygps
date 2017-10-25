@@ -37,7 +37,7 @@ module FunkyGPS
         def update
             raise NoMapFound, "your have to load a gps track first" unless controlcenter.map
             #show it on the PaPiRus display
-            @display.show(to_bit_stream)
+            @display.show(to_bit_stream, 'P')
         end
         def width
             @display.width
