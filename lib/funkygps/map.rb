@@ -135,8 +135,8 @@ module FunkyGPS
                 out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
                 out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@controlcenter.fullscreen ? '2' : '3'}" width="#{@controlcenter.screen.width}px" height="#{@controlcenter.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
                 out << @signal.to_svg
-                #out << @tracks.map { |track| track.to_svg(rotate:{degrees: 90, x: @signal.lastPos.displayX, y: @signal.lastPos.displayY}) }.join("\n")
-                out << @tracks.map { |track| track.to_svg }.join("\n")
+                out << @tracks.map { |track| track.to_svg(rotate:{degrees: -(@signal.currenDirection), x: @signal.lastPos.displayX, y: @signal.lastPos.displayY}) }.join("\n")
+                #out << @tracks.map { |track| track.to_svg }.join("\n")
                 out << @waypoints.map { |wp| wp.to_svg }.join("\n")
                 out << %{</svg>}
                 out
