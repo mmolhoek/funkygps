@@ -48,7 +48,7 @@ module FunkyGPS
     # @param [String] trackfolder Search all gps files here and load them (defaults to {{FunkyGPS::DEFAULTTRACKFOLDER}})
     # @param epd_path[string] can be used write to fake display file (debugging, see papirus gem)
     # returns a controlcenter instance
-    def self.loadWith(fullscreen: false, landscape: true, track: nil, trackfolder: DEFAULTTRACKFOLDER, epd_path: nil)
+    def self.loadWith(fullscreen: false, landscape: true, track: nil, trackfolder: DEFAULTTRACKFOLDER, epd_path: '/dev/epd')
         ControlCenter.new(
             fullscreen: fullscreen,
             landscape: landscape,
