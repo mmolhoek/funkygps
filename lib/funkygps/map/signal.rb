@@ -27,7 +27,7 @@ module FunkyGPS
         # draws a dot on the last location and a line from that location
         # in the last know direction with a length representing the speed
         def to_svg
-            endpoint = lastPos.endpoint(heading:currenDirection, distance:speed)
+            endpoint = lastPos.endpoint(heading:0, distance:speed)
             out = %{<g>}
             out << %{<circle cx="#{lastPos.displayX}" cy="#{lastPos.displayY}" r="4" style="fill:none;stroke:black"/>}
             out << %{<path d="M #{lastPos.displayX} #{lastPos.displayY} L #{endpoint.displayX} #{endpoint.displayY}" style="fill:none;stroke:black"/>}
