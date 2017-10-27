@@ -17,8 +17,8 @@ Juwelier::Tasks.new do |gem|
   gem.name = "funkygps"
   gem.homepage = "http://github.com/mmolhoek/funkygps"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Load gps track files on your Raspberry PI PaPiRus Display}
+  gem.description = %Q{This is not a tracker gem. It is a full blown GPS tool}
   gem.email = "mischamolhoek@gmail.com"
   gem.authors = ["Mischa Molhoek"]
 
