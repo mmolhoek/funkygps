@@ -27,7 +27,7 @@ module FunkyGPS
             # to add support for it :). just clone this repo
             # have a look at lib/loaders/gpx.rb for an example
             # create your own, make a PR and submit it.
-            def loadTrack(file:)
+            def loadGPSFile(file:)
                 type = File.extname(file)[1..-1].upcase
                 begin
                     loader = GPSFormats.const_get("#{type}").new(file:file)

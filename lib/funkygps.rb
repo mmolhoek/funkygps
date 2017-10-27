@@ -17,28 +17,27 @@ end
 
 require_relative 'funkygps/screen'
 require_relative 'funkygps/map'
-#require_relative 'funkygps/menu'
 
 
 module FunkyGPS
     # Start FunkyGPS with all defaults
-    def self.load
-        self.loadWith
+    def self.init
+        self.initWith
     end
 
-    # loadWith can be used to start FunkyGPS with  is used to return the control center instance, which is the central
+    # initWith can be used to start FunkyGPS with  is used to return the control center instance, which is the central
     # point where all actions can be performed
     # @param [Boolean] fullscreen Should we start fullscreen or show menu/info as well
     # @param [Boolean] landscape Should screen be setup as landscape or portrait
-    # @param [String] track The trackfile that should be loaded
+    # @param [String] file The track(s)file that should be loaded
     # @param [String] trackfolder Search all gps files here and load them (defaults to {{FunkyGPS::DEFAULTTRACKFOLDER}})
     # @param epd_path[string] can be used write to fake display file (debugging, see papirus gem)
     # returns a controlcenter instance
-    def self.loadWith(fullscreen: false, landscape: true, track: nil, trackfolder: DEFAULTTRACKFOLDER, epd_path: '/dev/epd')
+    def self.initWith(fullscreen: false, landscape: true, file: nil, trackfolder: DEFAULTTRACKFOLDER, epd_path: '/dev/epd')
         ControlCenter.new(
             fullscreen: fullscreen,
             landscape: landscape,
-            track: track,
+            file: file,
             trackfolder: trackfolder,
             epd_path: epd_path
         )
@@ -50,13 +49,13 @@ module FunkyGPS
     # The Menu panel: shows a menu that gives access to all settings
     class ControlCenter
         attr_reader :screen, :map, :menu, :trackfolder
-        def initialize(fullscreen:, landscape:, track:, trackfolder:, epd_path:)
+        def initialize(fullscreen:, landscape:, file:, trackfolder:, epd_path:)
             #folder where all tracks are stored/loaded
             @screen = FunkyGPS::Screen.new(controlcenter: self, fullscreen: fullscreen, landscape: landscape, epd_path: epd_path)
             @map = FunkyGPS::Map.new(controlcenter:self)
             @menu = nil #FunkyGPS::Menu::Screen.new(controlcenter: self)
-            if track
-                @map.loadTrack(track: track)
+            if file
+                @map.loadGPSFile(file: file)
             else
                 @map.loadTracks(folder: trackfolder||DEFAULTTRACKFOLDER)
             end
