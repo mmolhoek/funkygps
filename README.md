@@ -1,23 +1,84 @@
 # FunkyGPS
 
-FunkyGPS is a gps application that can be used on a Rasberry PI with a PaPiRus display and a gps module attached.
+FunkyGPS is a gps application, written in Ruby, available as gem.
+It is created with a specific type of GPS usage in mind, namely offroad/enduro trips
+but you can use it for any other trip you could think of (walking, biking, auto/motor on the road, you name it)
+In this readme I will try to expain how to build it and how you can build it yourself.
 
-## Before your start
+Why I build it? have a look at my post on [Medium](https://medium.com/) explaining the reasons :)
 
-Before you start playing make sure you got the display driver installed (gratis/edp-fuse)
+To build this project I used an [Raspberry Pi Zero W](https://www.pi-supply.com/product/raspberry-pi-zero-w/), an [Adafruit Ultimate GPS](https://www.pi-supply.com/product/adafruit-ultimate-gps-breakout-66-channel-10-hz-updates/), and the 2.7 inch [PaPiRus ePaper display](https://www.pi-supply.com/product/papirus-epaper-eink-screen-hat-for-raspberry-pi/), but all other sizes should work to.
 
+There are some other things you need, I will add a shopping list at the bottom
+Lets get started
+
+## prepping the Pi harddisk (micro sd) and connecting to it with ssh
+
+please have a look at [PiBakery](http://www.pibakery.org/) as this is the easiest way to prep your sd-card with wifi acces point and password configured
+so you can ssh right onto your pi after first boot.
+
+## installing the dependencies (on the Raspberry Pi):
 ```bash
-sudo apt-get install libfuse-dev -y
+ssh pi@raspberrypi #or whatever name you gave it in PiBakery
+# check which ones are needed: sudo apt-get install git python-imaging python-smbus bc i2c-tools python-dateutil fonts-freefont-ttf -y
+sudo apt-get install git bc i2c-tools fonts-freefont-ttf imagemagick -y
 
-git clone https://github.com/repaper/gratis.git
-cd gratis
-make rpi EPD_IO=epd_io.h PANEL_VERSION='V231_G2'
-make rpi-install EPD_IO=epd_io.h PANEL_VERSION='V231_G2'
-systemctl enable epd-fuse.service
-systemctl start epd-fuse
+# also enable the SPI and the I2C interfaces. and set the timezone if you did not do that in PiBakery already
+sudo raspi-config
+
+# Install fuse driver which is used by the PaPiRus display driver
+sudo apt-get install libfuse-dev -y
 ```
 
-You can find more detailed instructions and updates at the [gratis](https://github.com/repaper/gratis) repo
+After a first auto install setup of the display (don't install this one, read on) [driver](https://github.com/PiSupply/PaPiRus.git) to test if the screen was working,
+I found out that both the PaPiRus and the GPS use pin 10 (gpio 16) and pin 08 (gpio 15), the UART ports luckely we can compile the PaPiRus driver,
+telling it we want it to use other pins, which is not used by the PaPiRus yet and not used by the GPS. Let's do this now.
+
+## build the PaPiRus driver from source
+```bash
+#get the source
+git clone https://github.com/repaper/gratis.git
+cd gratis
+```
+
+before we compile and install the driver we have to make some changes
+as (GPIO_P1_07 and GPIO_P1_15 are not used by both the gps and the PaPiRus,
+we will tell PaPiRus to use these instead of GPIO_P1_08 and GPIO_P1_10
+
+edit PlatformWithOS/RaspberryPi/epd_io.h in your fav editor (vi for me)
+
+```vi PlatformWithOS/RaspberryPi/epd_io.h```
+
+* change the border_pin GPIO_P1_08 to GPIO_P1_07
+* change the discharge pin GPIO_P1_10 to GPIO_P1_15
+
+Do not remove the # hash in front of the lines, they belong there :)
+save the file and exit
+
+```bash
+#now we build the driver
+make rpi EPD_IO=epd_io.h PANEL_VERSION='V231_G2'
+#and install it
+sudo make rpi-install PANEL_VERSION='V231_G2'
+
+# enable and start the service
+sudo systemctl enable epd-fuse.service
+sudo systemctl start epd-fuse
+```
+
+set the screen size (1.44 | 1.9 | 2.0 | 2.6 | 2.7) (2.7 in my case)
+```bash
+sudo papirus-set 2.7
+```
+
+Now that all driver stuff is done, you should test if it is all functioning correctly.
+
+Have a look at the Ruby display driver [gem papirus](https://github.com/mmolhoek/papirus), that I created prior to this project to be able to talk to the driver from Ruby.
+Try loading an image as explained [here](https://github.com/mmolhoek/papirus#playing-with-rmagic). If this works, you are ready to move on.
+
+FunkyGPS also uses this gem internally to update the display as it goes.
+
+After your sure the display is up and running, Lets move on to using FunkyGPS
 
 ## Installation
 
@@ -73,11 +134,14 @@ puts "the current bearing of the signal is #{gps.map.signal.currenDirection} deg
 * Create a PR
 
 ## Todo's
-* zoom
-* distance to track
+
+* testing by using yarndoc
+* zoom in/out.
+* distance iand direction to track if not near the track
 * intergration of actual GPS Signal
+* showing info about next 3 courners to come (distance, and turning degrees)
 
 ## Copyright
 
-Copyright (c) 2017 FunkyForce. See LICENSE.txt for further details. (MIT)
+Copyright (c) 2017 [FunkyForce](http://funkyforce.nl). See LICENSE.txt for further details. (MIT)
 
