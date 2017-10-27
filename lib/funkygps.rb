@@ -1,25 +1,9 @@
-=begin
-= funkygps
-
-FunkyGPS is a gps application that can be used on a Rasberry PI with a PaPiRus display and a gps module attached.
-
-== Contributing to funkygps
-
-* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
-* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
-* Fork the project.
-* Start a feature/bugfix branch.
-* Commit and push until you are happy with your contribution.
-
-== Copyright
-
-Copyright (c) 2017 Mischa Molhoek. See LICENSE.txt for further details.
-=end
-
+# All FunkyGPS defaults are stored here
 module FunkyGPS
-    # Sets the default metrics unit
+    # Sets the default metrics unit to meters
     DEFAULTMETRICS = :meters
     # Sets the default folder, where FunkyGPS will look for tracks
+    # which will be loaded when calling {FunkyGPS.load}
     DEFAULTTRACKFOLDER = './tracks/'
     # FunkyGPS base error
     class Exception < ::StandardError; end
@@ -27,6 +11,8 @@ module FunkyGPS
     class ExtentionNotSupported < FunkyGPS::Exception; end
     # FunkyGPS error when the is no map available
     class NoMapFound < FunkyGPS::Exception; end
+    # FunkyGPS error when the is no track available
+    class NoTrackFound < FunkyGPS::Exception; end
 end
 
 require_relative 'funkygps/screen'

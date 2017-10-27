@@ -59,7 +59,7 @@ module FunkyGPS
                     end
                     @signal.restoreTrack(track: oldTrack)
                 else
-                    raise "track @{track} not found"
+                    raise NoTrackFound, "track @{track} not found"
                 end
             end
 
@@ -81,7 +81,7 @@ module FunkyGPS
                     list.each {|image| image.delay = delay }
                     list.write(name)
                 else
-                    raise "track @{track} not found"
+                    raise NoTrackFound, "track @{track} not found"
                 end
             end
             # Simulate a track by moving from start to end trackpoints
@@ -101,7 +101,7 @@ module FunkyGPS
                     end
                     @signal.restoreTrack(track: oldTrack)
                 else
-                    raise "track @{track} not found"
+                    raise NoTrackFound, "track @{track} not found"
                 end
             end
 
