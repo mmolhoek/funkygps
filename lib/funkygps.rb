@@ -15,6 +15,7 @@ module FunkyGPS
     class NoTrackFound < FunkyGPS::Exception; end
 end
 
+require_relative 'funkygps/signal'
 require_relative 'funkygps/screen'
 require_relative 'funkygps/map'
 
@@ -48,11 +49,15 @@ module FunkyGPS
     # The Info panel: showing information about speed, direction, etc
     # The Menu panel: shows a menu that gives access to all settings
     class ControlCenter
-        attr_reader :screen, :map, :menu, :trackfolder
+        attr_reader :screen, :map, :signal, :menu, :trackfolder
         def initialize(fullscreen:, landscape:, file:, trackfolder:, epd_path:)
             #folder where all tracks are stored/loaded
-            @screen = FunkyGPS::Screen.new(controlcenter: self, fullscreen: fullscreen, landscape: landscape, epd_path: epd_path)
-            @map = FunkyGPS::Map.new(controlcenter:self)
+            @screen = Screen.new(controlcenter: self, fullscreen: fullscreen, landscape: landscape, epd_path: epd_path)
+            #Initialize the GPS signal input
+            @signal = Signal.new(controlcenter:self)
+            #Initialize the map
+            @map = Map.new(controlcenter:self)
+            #Initialize the menu (todo)
             @menu = nil #FunkyGPS::Menu::Screen.new(controlcenter: self)
             if file
                 @map.loadGPSFile(file: file)

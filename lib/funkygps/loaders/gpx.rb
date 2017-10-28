@@ -1,5 +1,5 @@
 module FunkyGPS
-    module Map
+    class Map
         module GPSFormats
             # This is the loader for gpx files
             # If you want to create yor own loader, please feel free (create a PR)

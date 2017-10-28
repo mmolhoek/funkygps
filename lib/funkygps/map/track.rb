@@ -1,5 +1,5 @@
 module FunkyGPS
-    module Map
+    class Map
         # A Track is a list of coordinates and has a name
         class Track
             attr_reader :trackpoints, :name

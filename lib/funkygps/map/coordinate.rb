@@ -5,7 +5,7 @@ require 'geokit'
 
 module FunkyGPS
     Geokit::default_units = DEFAULTMETRICS # others :kms, :nms, :meters
-    module Map
+    class Map
         class Coordinate
             attr_accessor :map
             attr_reader :x, :y, :loc
