@@ -134,13 +134,15 @@ puts "the current bearing of the signal is #{gps.map.signal.currenDirection} deg
 ```
 ## Development
 ```bash
-#install enviroment with bundler
+# Install enviroment with bundler
 $ (sudo) gem install bundler # if you did not already
-$ bundle
+$ bundle # installs all gems
 # run the unit tests right from the doumentation
 bundle exec rake yarn:doctest
-#create the documentation with
+# Create the documentation with
 bundle exec rake yarn
+# Start a irb session
+bundle exec irb -r ./lib/funkygps
 ```
 ## Contributing to funkygps
 
