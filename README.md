@@ -3,13 +3,14 @@
 FunkyGPS is a gps application, written in Ruby, available as gem.
 It is created with a specific type of GPS usage in mind, namely offroad/enduro trips
 but you can use it for any other trip you could think of (walking, biking, auto/motor on the road, you name it)
-In this readme I will try to expain how to build it and how you can build it yourself.
+In this readme I will try to expain how I build it and how you can build it yourself.
 
 Why I build it? have a look at my post on [Medium](https://medium.com/) explaining the reasons :)
 
 To build this project I used an [Raspberry Pi Zero W](https://www.pi-supply.com/product/raspberry-pi-zero-w/), an [Adafruit Ultimate GPS](https://www.pi-supply.com/product/adafruit-ultimate-gps-breakout-66-channel-10-hz-updates/), and the 2.7 inch [PaPiRus ePaper display](https://www.pi-supply.com/product/papirus-epaper-eink-screen-hat-for-raspberry-pi/), but all other sizes should work to.
 
-There are some other things you need, I will add a shopping list at the bottom
+There are some other things you need, I will add a shopping list at the bottom.
+
 Lets get started
 
 ## prepping the Pi harddisk (micro sd) and connecting to it with ssh
@@ -17,7 +18,7 @@ Lets get started
 please have a look at [PiBakery](http://www.pibakery.org/) as this is the easiest way to prep your sd-card with wifi acces point and password configured
 so you can ssh right onto your pi after first boot.
 
-## installing the dependencies (on the Raspberry Pi):
+## installing the dependencies (on the Pi):
 ```bash
 ssh pi@raspberrypi #or whatever name you gave it in PiBakery
 # check which ones are needed: sudo apt-get install git python-imaging python-smbus bc i2c-tools python-dateutil fonts-freefont-ttf -y
@@ -106,14 +107,19 @@ creating a animated gif of a track
 ```ruby
 $ irb
 require 'funkygps'
-gps = FunkyGPS.new(epd_path: '/tmp/epd', file: '/path/to/gpx/file.gpx')
+# To get the 2.0 panel display you would only have to pass the fake folder as the 2.0 is the default display:
+gps = FunkyGPS.new(testdisplay: {epd_path: '/tmp/epd'}, file: './tracks/test.gpx')
+# but for the 2.7 display, your would also have to pass the width, height and panel info
+gps = FunkyGPS.new(testdisplay: {epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7'}, file: './tracks/test.gpx')
+
 gps.map.simulateToGif(track:'track 1', name: 'out.gif')
 ```
 
 other examples
 ```ruby
 require 'funkygps'
-gps = FunkyGPS.new(epd_path: '/tmp/epd')
+gps = FunkyGPS.new(testdisplay: {epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7'}, file: './tracks/test.gpx')
+
 gps.screen.update # send current display to screen
 gps.screen.to_ascii # send current display as ascii art to terminal (put your terminal font small)
 gps.screen.to_file # create a screenshot of current display to screen.png

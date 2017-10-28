@@ -29,15 +29,15 @@ class FunkyGPS
     # @param [Boolean] landscape Should screen be setup as landscape or portrait
     # @param [String] file The track(s)file that should be loaded
     # @param [String] trackfolder Search all gps files here and load them (defaults to {{FunkyGPS::DEFAULTTRACKFOLDER}})
-    # @param epd_path[string] can be used write to fake display file (debugging, see papirus gem)
+    # @param testdisplay[Hash] can be used write to fake the display
     #
     # The Map: holds all map info, including tracksetc
     # The Info panel: showing information about speed, direction, etc
     # The Menu panel: shows a menu that gives access to all settings
     attr_reader :screen, :map, :signal, :menu, :trackfolder
-    def initialize(fullscreen:false, landscape: true, file:nil, trackfolder:DEFAULTTRACKFOLDER, epd_path:nil)
+    def initialize(fullscreen:false, landscape: true, file:nil, trackfolder:DEFAULTTRACKFOLDER, testdisplay:nil)
         #folder where all tracks are stored/loaded
-        @screen = Screen.new(funkygps: self, fullscreen: fullscreen, landscape: landscape, epd_path: epd_path)
+        @screen = Screen.new(funkygps: self, fullscreen: fullscreen, landscape: landscape, testdisplay: testdisplay)
         #Initialize the GPS signal input
         @signal = Signal.new(funkygps:self)
         #Initialize the map

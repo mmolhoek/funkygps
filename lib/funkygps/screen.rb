@@ -27,11 +27,19 @@ class FunkyGPS
     class Screen
         attr_reader :display, :funkygps
         attr_accessor :fullscreen, :landscape
-        def initialize(funkygps:, fullscreen:, landscape:, epd_path:)
+        def initialize(funkygps:, fullscreen:, landscape:, testdisplay:nil)
             @funkygps = funkygps
             @fullscreen = fullscreen
             @landscape = true
-            @display = ::PaPiRus::Display.new(epd_path: epd_path)
+            if testdisplay
+                if testdisplay[:width] #assuming you use all params
+                    @display = ::PaPiRus::Display.new(epd_path: testdisplay[:epd_path], width: testdisplay[:width], height: testdisplay[:height], panel: testdisplay[:panel])
+                else #assuming you only pass path
+                    @display = ::PaPiRus::Display.new(epd_path: testdisplay[:epd_path])
+                end
+            else
+                @display = ::PaPiRus::Display.new()
+            end
             @layout = Layout.new(funkygps: funkygps, screen:self)
         end
         def update
