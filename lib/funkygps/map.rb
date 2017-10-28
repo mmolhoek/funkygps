@@ -68,7 +68,7 @@ class FunkyGPS
 
         # Simulate a track by moving from start to end trackpoints
         # on the PaPiRus display, as fast as possible
-        # @example simulate to fake display
+        # @example Simulate to PaPiRus display
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
         #   gps.map.simulate(track:'track 1')
         def simulate(track:)
@@ -89,6 +89,15 @@ class FunkyGPS
 
         # Simulate a track by moving from start to end trackpoints
         # at a x second interval, creating an animated gif of the result
+        # @example Simulate to an animated gif name track.gif
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.simulateToGif(track:'track 1')
+        # @example Simulate to an animated gif name hi.gif
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.simulateToGif(track:'track 1', name: 'hi.gif')
+        # @example Simulate to an animated gif with delay of 500 ms between each move
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.simulateToGif(track:'track 1', delay: 500)
         def simulateToGif(track:, name: 'track.gif', delay: 100)
             if track = @tracks.find{|t| t.name === track}
                 STDERR.puts "creating gif animation of track '#{track.name}' to #{name} with #{delay} delay"
