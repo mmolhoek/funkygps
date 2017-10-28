@@ -132,6 +132,16 @@ puts "the maps square distance is #{gps.map.realWidth.round} meters by #{gps.map
 puts "the maps viewBox square distance is #{gps.map.viewbox.realWidth.round} meters by #{gps.map.viewbox.realHeight.round} meters"
 puts "the current bearing of the signal is #{gps.map.signal.currenDirection} degrees"
 ```
+## Development
+```bash
+#install enviroment with bundler
+$ (sudo) gem install bundler # if you did not already
+$ bundle
+# run the unit tests right from the doumentation
+bundle exec rake yarn:doctest
+#create the documentation with
+bundle exec rake yarn
+```
 ## Contributing to funkygps
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.

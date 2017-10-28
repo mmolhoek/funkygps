@@ -8,25 +8,41 @@ class FunkyGPS
         attr_reader :funkygps, :gps, :tracks, :waypoints, :x, :y, :viewbox
         def initialize(funkygps:)
             @funkygps = funkygps
-            @tracks = []
-            @waypoints = []
+            clearTracks
             @viewbox = ViewBox.new(map: self, funkygps: funkygps)
         end
-        # Will search for all track files and load them
-        def loadTracks(folder:)
-            Dir["#{folder}/*.gpx"].each{|file| loadTrack(file: file)}
+        # Will search for all gps files and try to load them if supported
+        # @example Load all tracks from test tracks folder
+        #   gps.map.loadGPSFilesFrom(folder:'./tracks/')
+        #   gps.map.tracks.length #=> 2
+        # @example Will skip unknown files
+        #   gps.map.loadGPSFilesFrom(folder:'.')
+        #   gps.map.tracks.length #=> 0
+        def loadGPSFilesFrom(folder:)
+            Dir["#{folder}/*"].each do |file|
+                begin
+                    loadGPSFile(file: file)
+                rescue FunkyGPS::ExtentionNotSupported
+                    STDERR.puts "skipping #{file}, format not yet supported" if FunkyGPS::VERBOSE
+                    next
+                end
+            end
         end
-        # Will load any trackfile type that is supported
+        # Will load any gps file type that is supported
         # if your gps filetype is not supported, it's very easy
         # to add support for it :). just clone this repo
         # have a look at lib/loaders/gpx.rb for an example
         # create your own, make a PR and submit it.
+        # @example Load gps file from test tracks folder
+        #   gps.map.loadGPSFile(file:'./tracks/test.gpx')
+        #   gps.map.tracks.length #=> 1
         def loadGPSFile(file:)
-            type = File.extname(file)[1..-1].upcase
             begin
-                loader = GPSFormats.const_get("#{type}").new(file:file)
+                type = File.extname(file)
+                raise NameError unless type
+                loader = GPSFormats.const_get("#{type[1..-1].upcase}").new(file:file)
             rescue NameError
-                raise ExtentionNotSupported, "The GPS::GPSFormats::#{type} does not seem to be supported yet. See documentation on how to add it yourself :)"
+                raise ExtentionNotSupported, "The GPS::GPSFormats::#{type} if file #{file} does not seem to be supported yet. See documentation on how to add it yourself :)"
             end
             loader.waypoints.each do |waypoint|
                 if at = waypoint.name[/^me(\d*)/]
@@ -39,6 +55,11 @@ class FunkyGPS
             loader.tracks.each {|track| addTrack(track: track)}
         end
 
+        # Clear all tracks
+        def clearTracks
+            @tracks = []
+            @waypoints = []
+        end
         # Simulate a track by moving from start to end trackpoints
         # at a x second interval on the PaPiRus display
         def simulate(track:)
