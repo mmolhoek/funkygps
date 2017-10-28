@@ -34,7 +34,7 @@ class FunkyGPS
         # have a look at {FunkyGPS::Map::GPSFormats::GPX} for an example
         # create your own, make a PR and submit it.
         # @example Load gps file from test tracks folder
-        #   gps.map.loadGPSFile(file:'./tracks/test.gpx')
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
         #   gps.map.tracks.length #=> 1
         def loadGPSFile(file:)
             begin
@@ -57,7 +57,7 @@ class FunkyGPS
 
         # Clear all tracks
         # @example Load gps file from test tracks folder
-        #   gps.map.loadGPSFile(file:'./tracks/test.gpx')
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
         #   gps.map.tracks.length #=> 1
         #   gps.map.clearTracks
         #   gps.map.tracks.length #=> 0
@@ -65,8 +65,12 @@ class FunkyGPS
             @tracks = []
             @waypoints = []
         end
+
         # Simulate a track by moving from start to end trackpoints
         # on the PaPiRus display, as fast as possible
+        # @example simulate to fake display
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.simulate(track:'track 1')
         def simulate(track:)
             if track = @tracks.find{|t| t.name === track}
                 oldTrack = @funkygps.signal.clearSignal
