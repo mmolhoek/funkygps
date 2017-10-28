@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
 require 'funkygps'
-gps = FunkyGPS.initWith(file:File.join(File.dirname(__FILE__), '../tracks/test.gpx'), epd_path: '/tmp/epd')
+gps = FunkyGPS.new(file:File.join(File.dirname(__FILE__), '../tracks/test.gpx'), epd_path: '/tmp/epd')
 gps.map.simulateToGif(track: 'track 1', name: 'out.gif')

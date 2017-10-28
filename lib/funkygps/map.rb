@@ -3,14 +3,14 @@ require_relative 'loaders/gpx'
 require_relative 'map/track'
 require_relative 'map/coordinate'
 
-module FunkyGPS
+class FunkyGPS
     class Map
-        attr_reader :controlcenter, :gps, :tracks, :waypoints, :x, :y, :viewbox
-        def initialize(controlcenter:)
-            @controlcenter = controlcenter
+        attr_reader :funkygps, :gps, :tracks, :waypoints, :x, :y, :viewbox
+        def initialize(funkygps:)
+            @funkygps = funkygps
             @tracks = []
             @waypoints = []
-            @viewbox = ViewBox.new(map: self, controlcenter: controlcenter)
+            @viewbox = ViewBox.new(map: self, funkygps: funkygps)
         end
         # Will search for all track files and load them
         def loadTracks(folder:)
@@ -43,15 +43,15 @@ module FunkyGPS
         # at a x second interval on the PaPiRus display
         def simulate(track:)
             if track = @tracks.find{|t| t.name === track}
-                oldTrack = @controlcenter.signal.clearSignal
+                oldTrack = @funkygps.signal.clearSignal
                 addSignal(trackpoint:track.trackpoints.shift)
                 addSignal(trackpoint:track.trackpoints.shift)
-                controlcenter.screen.update
+                funkygps.screen.update
                 track.trackpoints.each do |trackpoint|
                     addSignal(trackpoint:trackpoint)
-                    controlcenter.screen.update
+                    funkygps.screen.update
                 end
-                @controlcenter.signal.restoreTrack(track: oldTrack)
+                @funkygps.signal.restoreTrack(track: oldTrack)
             else
                 raise NoTrackFound, "track @{track} not found"
             end
@@ -63,15 +63,15 @@ module FunkyGPS
             if track = @tracks.find{|t| t.name === track}
                 STDERR.puts "creating gif animation of track '#{track.name}' to #{name} with #{delay} delay"
                 list = Magick::ImageList.new
-                oldTrack = @controlcenter.signal.clearSignal
+                oldTrack = @funkygps.signal.clearSignal
                 addSignal(trackpoint:track.trackpoints.shift)
                 addSignal(trackpoint:track.trackpoints.shift)
-                list.read controlcenter.screen.to_image()
+                list.read funkygps.screen.to_image()
                 track.trackpoints.each do |trackpoint|
                     addSignal(trackpoint:trackpoint)
-                    list.read controlcenter.screen.to_image
+                    list.read funkygps.screen.to_image
                 end
-                @controlcenter.signal.restoreTrack(track: oldTrack)
+                @funkygps.signal.restoreTrack(track: oldTrack)
                 list.each {|image| image.delay = delay }
                 list.write(name)
             else
@@ -83,17 +83,17 @@ module FunkyGPS
         # art representation of the screen
         def simulateToAscii(track:)
             if track = @tracks.find{|t| t.name === track}
-                oldTrack = @controlcenter.signal.clearSignal
+                oldTrack = @funkygps.signal.clearSignal
                 addSignal(trackpoint:track.trackpoints.shift)
                 addSignal(trackpoint:track.trackpoints.shift)
-                controlcenter.screen.to_file(name:'ascii')
+                funkygps.screen.to_file(name:'ascii')
                 sleep 2
                 track.trackpoints.each do |trackpoint|
                     addSignal(trackpoint:trackpoint)
-                    controlcenter.screen.to_file(name:'ascii')
+                    funkygps.screen.to_file(name:'ascii')
                     sleep 2
                 end
-                @controlcenter.signal.restoreTrack(track: oldTrack)
+                @funkygps.signal.restoreTrack(track: oldTrack)
             else
                 raise NoTrackFound, "track @{track} not found"
             end
@@ -101,7 +101,7 @@ module FunkyGPS
 
         def addSignal(trackpoint:, at:nil)
             trackpoint.map = self
-            @controlcenter.signal.addTrackpoint(trackpoint: trackpoint, at: at)
+            @funkygps.signal.addTrackpoint(trackpoint: trackpoint, at: at)
         end
         def addWaypoint(waypoint:)
             waypoint.map = self
@@ -127,9 +127,9 @@ module FunkyGPS
         def to_svg
             out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
             out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
-            out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@controlcenter.fullscreen ? '2' : '3'}" width="#{@controlcenter.screen.width}px" height="#{@controlcenter.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
-            out << @controlcenter.signal.to_svg
-            out << @tracks.map { |track| track.to_svg(rotate:{degrees: -(@controlcenter.signal.currenDirection), x: @controlcenter.signal.lastPos.displayX, y: @controlcenter.signal.lastPos.displayY}) }.join("\n")
+            out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
+            out << @funkygps.signal.to_svg
+            out << @tracks.map { |track| track.to_svg(rotate:{degrees: -(@funkygps.signal.currenDirection), x: @funkygps.signal.lastPos.displayX, y: @funkygps.signal.lastPos.displayY}) }.join("\n")
             #out << @tracks.map { |track| track.to_svg }.join("\n")
             out << @waypoints.map { |wp| wp.to_svg }.join("\n")
             out << %{</svg>}
@@ -184,36 +184,36 @@ module FunkyGPS
 
         # all Latitudes of all tracks
         def x
-            @x ||= @tracks.map{|track| track.trackpoints.map{|p| p.x}}.flatten + @waypoints.map{|wp| wp.x} + [@controlcenter.signal.lastPos.x]
+            @x ||= @tracks.map{|track| track.trackpoints.map{|p| p.x}}.flatten + @waypoints.map{|wp| wp.x} + [@funkygps.signal.lastPos.x]
         end
         def lats
-            @lats ||= @tracks.map{|track| track.trackpoints.map{|p| p.latitude}}.flatten + @waypoints.map{|wp| wp.latitude} + (@controlcenter.signal.lastPos ? [@controlcenter.signal.lastPos.latitude] : [])
+            @lats ||= @tracks.map{|track| track.trackpoints.map{|p| p.latitude}}.flatten + @waypoints.map{|wp| wp.latitude} + (@funkygps.signal.lastPos ? [@funkygps.signal.lastPos.latitude] : [])
         end
         # all Longitudes of all tracks
         def y
-            @y ||= @tracks.map{|track| track.trackpoints.map{|p| p.y}}.flatten + @waypoints.map{|wp| wp.y} + [@controlcenter.signal.lastPos.y]
+            @y ||= @tracks.map{|track| track.trackpoints.map{|p| p.y}}.flatten + @waypoints.map{|wp| wp.y} + [@funkygps.signal.lastPos.y]
         end
         def lons
-            @lons ||= @tracks.map{|track| track.trackpoints.map{|p| p.longitude}}.flatten + @waypoints.map{|wp| wp.longitude} + (@controlcenter.signal.lastPos ? [@controlcenter.signal.lastPos.longitude] : [])
+            @lons ||= @tracks.map{|track| track.trackpoints.map{|p| p.longitude}}.flatten + @waypoints.map{|wp| wp.longitude} + (@funkygps.signal.lastPos ? [@funkygps.signal.lastPos.longitude] : [])
         end
     end
     class ViewBox
-        attr_reader :map, :controlcenter
-        def initialize(map:, controlcenter:)
+        attr_reader :map, :funkygps
+        def initialize(map:, funkygps:)
             @map = map
-            @controlcenter = controlcenter
+            @funkygps = funkygps
         end
         def width
-            @controlcenter.screen.width
+            @funkygps.screen.width
         end
         def height
-            @controlcenter.screen.height
+            @funkygps.screen.height
         end
         def x
-            @controlcenter.signal.lastPos.displayX - (width/2)
+            @funkygps.signal.lastPos.displayX - (width/2)
         end
         def y
-            @controlcenter.signal.lastPos.displayY - (height/2)
+            @funkygps.signal.lastPos.displayY - (height/2)
         end
         def realWidth
             @map.realWidth / @map.width * width

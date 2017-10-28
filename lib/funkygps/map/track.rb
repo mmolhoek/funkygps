@@ -1,4 +1,4 @@
-module FunkyGPS
+class FunkyGPS
     class Map
         # A Track is a list of coordinates and has a name
         class Track

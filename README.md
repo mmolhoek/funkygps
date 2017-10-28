@@ -95,23 +95,25 @@ the gem has a test gpx (track) file in its tracks folder, which you can use to p
 ```ruby
 $ irb
 require 'funkygps'
-gps = FunkyGPS.loadWidth(file:'./tracks/test.gpx')
+gps = FunkyGPS.new(file:'./tracks/test.gpx')
 gps.map.simulate(track:'track 1')
 ```
 ### testing on your laptop with no papirus display available
+
+When you pass the `epd_path` parameter you can tell the papirus gem to use a fake display folder. Make sure the path is writable as FunkyGPS will ask the papirus gem to create a fake display structure there
 
 creating a animated gif of a track
 ```ruby
 $ irb
 require 'funkygps'
-gps = FunkyGPS.initWith(epd_path: '/tmp/epd', file: '/path/to/gpx/file.gpx')
+gps = FunkyGPS.new(epd_path: '/tmp/epd', file: '/path/to/gpx/file.gpx')
 gps.map.simulateToGif(track:'track 1', name: 'out.gif')
 ```
 
 other examples
 ```ruby
 require 'funkygps'
-gps = FunkyGPS.initWith(epd_path: '/tmp/epd')
+gps = FunkyGPS.new(epd_path: '/tmp/epd')
 gps.screen.update # send current display to screen
 gps.screen.to_ascii # send current display as ascii art to terminal (put your terminal font small)
 gps.screen.to_file # create a screenshot of current display to screen.png

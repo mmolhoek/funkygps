@@ -3,12 +3,12 @@ require 'papirus/rmagick'
 # used to embed svg's
 require 'tempfile'
 
-module FunkyGPS
+class FunkyGPS
     class Layout
         attr_reader :screen
-        def initialize(controlcenter:, screen:)
+        def initialize(funkygps:, screen:)
             @screen = screen
-            @controlcenter = controlcenter
+            @funkygps = funkygps
         end
         def mapX
             0
@@ -17,7 +17,7 @@ module FunkyGPS
             0
         end
         def mapWidth
-            #@controlcenter.settings.map.fullscreen ? @screen.width : @screen.width
+            #@funkygps.settings.map.fullscreen ? @screen.width : @screen.width
             @screen.width
         end
         def mapHeight
@@ -25,17 +25,17 @@ module FunkyGPS
         end
     end
     class Screen
-        attr_reader :display, :controlcenter
+        attr_reader :display, :funkygps
         attr_accessor :fullscreen, :landscape
-        def initialize(controlcenter:, fullscreen:, landscape:, epd_path:)
-            @controlcenter = controlcenter
+        def initialize(funkygps:, fullscreen:, landscape:, epd_path:)
+            @funkygps = funkygps
             @fullscreen = fullscreen
             @landscape = true
             @display = ::PaPiRus::Display.new(epd_path: epd_path)
-            @layout = Layout.new(controlcenter: controlcenter, screen:self)
+            @layout = Layout.new(funkygps: funkygps, screen:self)
         end
         def update
-            raise NoMapFound, "your have to load a gps track first" unless controlcenter.map
+            raise NoMapFound, "your have to load a gps track first" unless funkygps.map
             #show it on the PaPiRus display
             @display.show(to_bit_stream, 'P')
         end
@@ -62,7 +62,7 @@ module FunkyGPS
                 out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
                 out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
                 out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="#{width}px" height="#{height}px">\n}
-                out << add_svg(x: @layout.mapX, y: @layout.mapY, width: @layout.mapWidth, height: @layout.mapHeight, svg: controlcenter.map.to_svg)
+                out << add_svg(x: @layout.mapX, y: @layout.mapY, width: @layout.mapWidth, height: @layout.mapHeight, svg: funkygps.map.to_svg)
                 out << %{</svg>}
                 out
             end

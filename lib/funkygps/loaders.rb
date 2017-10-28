@@ -1,5 +1,5 @@
 require 'nokogiri'
-module FunkyGPS
+class FunkyGPS
     class Map
         module GPSFormats
             # All supported gps formats use a loader to be ... loaded

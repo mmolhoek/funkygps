@@ -1,4 +1,4 @@
-module FunkyGPS
+class FunkyGPS
     class Map
         module GPSFormats
             # This is the loader for gpx files

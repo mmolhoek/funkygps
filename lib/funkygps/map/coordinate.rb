@@ -3,7 +3,7 @@ require 'geokit'
 
 # default metrics
 
-module FunkyGPS
+class FunkyGPS
     Geokit::default_units = DEFAULTMETRICS # others :kms, :nms, :meters
     class Map
         class Coordinate

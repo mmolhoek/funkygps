@@ -1,9 +1,9 @@
-module FunkyGPS
+class FunkyGPS
     class Signal
-        attr_reader :controlcenter, :map, :track
-        def initialize(controlcenter:)
-            @controlcenter = controlcenter
-            @map = @controlcenter.map
+        attr_reader :funkygps, :map, :track
+        def initialize(funkygps:)
+            @funkygps = funkygps
+            @map = @funkygps.map
             @track = []
         end
         # When loading a map, you can add waypoint with the name me, me1, me2, me{\d}*
