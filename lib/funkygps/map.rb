@@ -31,7 +31,7 @@ class FunkyGPS
         # Will load any gps file type that is supported
         # if your gps filetype is not supported, it's very easy
         # to add support for it :). just clone this repo
-        # have a look at lib/loaders/gpx.rb for an example
+        # have a look at {FunkyGPS::Map::GPSFormats::GPX} for an example
         # create your own, make a PR and submit it.
         # @example Load gps file from test tracks folder
         #   gps.map.loadGPSFile(file:'./tracks/test.gpx')
@@ -56,12 +56,17 @@ class FunkyGPS
         end
 
         # Clear all tracks
+        # @example Load gps file from test tracks folder
+        #   gps.map.loadGPSFile(file:'./tracks/test.gpx')
+        #   gps.map.tracks.length #=> 1
+        #   gps.map.clearTracks
+        #   gps.map.tracks.length #=> 0
         def clearTracks
             @tracks = []
             @waypoints = []
         end
         # Simulate a track by moving from start to end trackpoints
-        # at a x second interval on the PaPiRus display
+        # on the PaPiRus display, as fast as possible
         def simulate(track:)
             if track = @tracks.find{|t| t.name === track}
                 oldTrack = @funkygps.signal.clearSignal
@@ -99,6 +104,7 @@ class FunkyGPS
                 raise NoTrackFound, "track @{track} not found"
             end
         end
+
         # Simulate a track by moving from start to end trackpoints
         # at a x second interval, updating the screen with an ascii
         # art representation of the screen
@@ -120,6 +126,11 @@ class FunkyGPS
             end
         end
 
+        # Adds a GPS signal to the list of signals received by the GPS module
+        # @example Add a signal to the list
+        #   gps.signal.track.length #=> 4
+        #   gps.map.addSignal(trackpoint:FunkyGPS::Map::Coordinate.new(lat:0,lng:0))
+        #   gps.signal.track.length #=> 5
         def addSignal(trackpoint:, at:nil)
             trackpoint.map = self
             @funkygps.signal.addTrackpoint(trackpoint: trackpoint, at: at)
