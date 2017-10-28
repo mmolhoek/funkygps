@@ -88,7 +88,7 @@ class FunkyGPS
         end
 
         # Simulate a track by moving from start to end trackpoints
-        # at a x second interval, creating an animated gif of the result
+        # at a x ms interval, creating an animated gif of the result
         # @example Simulate to an animated gif name track.gif
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
         #   gps.map.simulateToGif(track:'track 1')
@@ -119,19 +119,25 @@ class FunkyGPS
         end
 
         # Simulate a track by moving from start to end trackpoints
-        # at a x second interval, updating the screen with an ascii
+        # at a 2 second interval, updating the screen with an ascii
         # art representation of the screen
-        def simulateToAscii(track:)
+        # @example Simulate to your terminal as ASCII art (put your term font very small :))
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.simulateToAscii(track:'track 1')
+        # @example Simulate to your terminal with delay of 3 second
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.simulateToAscii(track:'track 1', delay: 3)
+        def simulateToAscii(track:, delay: 2)
             if track = @tracks.find{|t| t.name === track}
                 oldTrack = @funkygps.signal.clearSignal
                 addSignal(trackpoint:track.trackpoints.shift)
                 addSignal(trackpoint:track.trackpoints.shift)
                 funkygps.screen.to_file(name:'ascii')
-                sleep 2
+                sleep delay
                 track.trackpoints.each do |trackpoint|
                     addSignal(trackpoint:trackpoint)
                     funkygps.screen.to_file(name:'ascii')
-                    sleep 2
+                    sleep delay
                 end
                 @funkygps.signal.restoreTrack(track: oldTrack)
             else
