@@ -35,7 +35,7 @@ class FunkyGPS
     # @param [Boolean] fullscreen Should we start fullscreen or show menu/info as well
     # @param [Boolean] landscape Should screen be setup as landscape or portrait
     # @param [String] file The track(s)file that should be loaded
-    # @param [String] trackfolder Search all gps files here and load them (defaults to {{DEFAULTTRACKFOLDER}})
+    # @param [String] trackfolder Search all gps files here and load them (defaults to {DEFAULTTRACKFOLDER})
     # @param testdisplay[Hash] can be used write to fake the display
     def initialize(fullscreen:true, landscape: true, file:nil, trackfolder:DEFAULTTRACKFOLDER, testdisplay:nil)
         #folder where all tracks are stored/loaded

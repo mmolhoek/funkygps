@@ -108,9 +108,9 @@ creating a animated gif of a track
 $ irb
 require 'funkygps'
 # To get the 2.0 panel display you would only have to pass the fake folder as the 2.0 is the default display:
-gps = FunkyGPS.new(testdisplay: {epd_path: '/tmp/epd'}, file: './tracks/test.gpx')
+gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd'}, file: './tracks/test.gpx')
 # but for the 2.7 display, your would also have to pass the width, height and panel info
-gps = FunkyGPS.new(testdisplay: {epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7'}, file: './tracks/test.gpx')
+gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7'}, file: './tracks/test.gpx')
 
 gps.map.simulateToGif(track:'track 1', name: 'out.gif')
 ```
@@ -118,7 +118,7 @@ gps.map.simulateToGif(track:'track 1', name: 'out.gif')
 other examples
 ```ruby
 require 'funkygps'
-gps = FunkyGPS.new(testdisplay: {epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7'}, file: './tracks/test.gpx')
+gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7' }, file: './tracks/test.gpx')
 
 gps.screen.update # send current display to screen
 gps.screen.to_ascii # send current display as ascii art to terminal (put your terminal font small)
@@ -126,11 +126,11 @@ gps.screen.to_file # create a screenshot of current display to screen.png
 File.open('test.svg', 'w+') {|f| f.write gps.map.to_svg} # write the svg of the current display to a file
 
 #other details:
-puts "the track distances in meters:\n#{gps.map.tracks.map{|tr| %{\t#{tr.name}:#{tr.distanceInMeters} meters\n}}.join('')}"
-puts "the track distances in km:\n#{gps.map.tracks.map{|tr| %{\t#{tr.name}:#{tr.distanceInKilometers} km\n}}.join('')}"
-puts "the maps square distance is #{gps.map.realWidth.round} meters by #{gps.map.realHeight.round} meters"
-puts "the maps viewBox square distance is #{gps.map.viewbox.realWidth.round} meters by #{gps.map.viewbox.realHeight.round} meters"
-puts "the current bearing of the signal is #{gps.map.signal.currenDirection} degrees"
+puts "the track distances in meters:\n#{ gps.map.tracks.map{|tr| %{\t#{ tr.name }:#{ tr.distanceInMeters } meters\n}}.join('') }"
+puts "the track distances in km:\n#{ gps.map.tracks.map{|tr| %{\t#{ tr.name }:#{ tr.distanceInKilometers } km\n}}.join('') }"
+puts "the maps square distance is #{ gps.map.realWidth.round } meters by #{ gps.map.realHeight.round } meters"
+puts "the maps viewBox square distance is #{ gps.map.viewbox.realWidth.round } meters by #{ gps.map.viewbox.realHeight.round } meters"
+puts "the current bearing of the signal is #{ gps.map.signal.currenDirection } degrees"
 ```
 ## Development
 ```bash

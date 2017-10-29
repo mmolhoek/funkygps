@@ -8,14 +8,14 @@ class FunkyGPS
             # to load the file into @doc, but you can override this by implementing
             # the initialize(file:) function as well. see lib/loaders.rb
             class GPX < Loader
-                # returns an array containing all the {{PaPiRus::GPS::WayPoint}}'s
+                # returns an array containing all the {FunkyGPS::GPS::WayPoint}'s
                 def waypoints
                     @doc.xpath('//wpt').map do |waypoint|
                         WayPoint.new(lat: waypoint.attr('lat'), lng: waypoint.attr('lon'), name: (waypoint.xpath('name').first.content rescue 'unknown'), icon: (waypoint.xpath('sym').first.content rescue nil))
                     end
                 end
-                # returns an array containing all the {{PaPiRus::GPS::Track}}'s
-                # which in turn should contain all the {{PaPiRus::GPS::Coordinate}}'s of each {PaPiRus::GPS::Track}}
+                # returns an array containing all the {FunkyGPS::GPS::Track}'s
+                # which in turn should contain all the {FunkyGPS::GPS::Coordinate}'s of each {FunkyGPS::GPS::Track}
                 def tracks
                     @doc.xpath('//trk').map do |track|
                         Track.new(trackpoints: track.xpath('.//trkpt').map{|pt| Coordinate.new(lat: pt.attr('lat'), lng: pt.attr('lon'))}, name: (track.xpath('name').first.content rescue 'unknown'))

@@ -6,7 +6,7 @@ class FunkyGPS
             @map = @funkygps.map
             @track = []
         end
-        # When loading a map, you can add waypoint with the name me, me1, me2, me{\d}*
+        # When loading a map, you can add waypoint with the name me, me1, me2, me[\d]*
         # this way you can mimic a gps signal
         def addTrackpoint(trackpoint:, at:nil)
             if at

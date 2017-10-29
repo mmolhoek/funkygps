@@ -18,7 +18,7 @@ class FunkyGPS
                 distance
             end
             # The distance to another location
-            # @param [Trackpoint] The trackpoint to calculate the distance to
+            # @param [Trackpoint] other The trackpoint to calculate the distance to
             def distanceTo(other:)
                 closest = @trackpoints.min{|tp| tp.distanceTo(other: other)}
                 closest.distanceTo(other: other)
