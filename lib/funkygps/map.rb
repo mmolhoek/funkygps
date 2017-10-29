@@ -15,7 +15,7 @@ class FunkyGPS
         # Will search for all gps files and try to load them if supported
         # @example Load all tracks from test tracks folder
         #   gps.map.loadGPSFilesFrom(folder:'./tracks/')
-        #   gps.map.tracks.length #=> 2
+        #   gps.map.tracks.length #=> 3
         # @example Will skip unknown files
         #   gps.map.loadGPSFilesFrom(folder:'.')
         #   gps.map.tracks.length #=> 0
@@ -171,9 +171,12 @@ class FunkyGPS
 
         # Adds a GPS signal to the list of signals received by the GPS module
         # @example Add a signal to the list
-        #   gps.signal.track.length #=> 4
+        #   gps.signal.track.length #=> 6
         #   gps.map.addSignal(trackpoint:FunkyGPS::Map::Coordinate.new(lat:0,lng:0))
-        #   gps.signal.track.length #=> 5
+        #   gps.signal.track.length #=> 7
+        #
+        # @param trackpoint [Trackpoint] The GPS signal (which is converted to a Trackpoint)
+        # @param at [Integer] used to put this signal at a sertain position in the tracklist
         def addSignal(trackpoint:, at:nil)
             trackpoint.map = self
             @funkygps.signal.addTrackpoint(trackpoint: trackpoint, at: at)
