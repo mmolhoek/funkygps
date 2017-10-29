@@ -65,7 +65,7 @@ class FunkyGPS
         # and merge them in the active layout and send it to the display
         def to_svg
             if (@fullscreen)
-                map.to_svg
+                funkygps.map.to_svg
             else
                 out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
                 out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}

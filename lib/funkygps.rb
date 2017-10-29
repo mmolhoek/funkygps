@@ -35,7 +35,7 @@ class FunkyGPS
     # @param [String] file The track(s)file that should be loaded
     # @param [String] trackfolder Search all gps files here and load them (defaults to {{DEFAULTTRACKFOLDER}})
     # @param testdisplay[Hash] can be used write to fake the display
-    def initialize(fullscreen:false, landscape: true, file:nil, trackfolder:DEFAULTTRACKFOLDER, testdisplay:nil)
+    def initialize(fullscreen:true, landscape: true, file:nil, trackfolder:DEFAULTTRACKFOLDER, testdisplay:nil)
         #folder where all tracks are stored/loaded
         @screen = Screen.new(funkygps: self, fullscreen: fullscreen, landscape: landscape, testdisplay: testdisplay)
         #Initialize the GPS signal input
