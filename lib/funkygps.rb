@@ -17,6 +17,8 @@ class FunkyGPS
     class NoMapFound < FunkyGPS::Exception; end
     # FunkyGPS error when the is no track available
     class NoTrackFound < FunkyGPS::Exception; end
+    # FunkyGPS error when the is no active track available
+    class NoActiveTrackFound < FunkyGPS::Exception; end
 end
 
 require_relative 'funkygps/signal'

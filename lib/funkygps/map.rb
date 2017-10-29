@@ -66,13 +66,36 @@ class FunkyGPS
             @waypoints = []
         end
 
+        # Set the current active Track
+        # @param [String] name The name of the track to set as current active track
+        # @example Set a track active
+        #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
+        #   gps.map.activeTrack.name #=> raise FunkyGPS::NoActiveTrackFound, "No track is active or found"
+        #   gps.map.setActiveTrack(name: 'track 1')
+        #   gps.map.activeTrack.name #=> 'track 1'
+        def setActiveTrack(name:)
+            @tracks.each do |track|
+                track.activeTrack = track.name == name
+            end
+        end
+
+        # Get the current Track
+        # @return [Track] The current active track
+        # @see #setActiveTrack
+        def activeTrack
+            track = @tracks.find { |tr| tr.activeTrack }
+            raise NoActiveTrackFound, "No track is active or found" unless track
+            return track
+        end
+
         # Simulate a track by moving from start to end trackpoints
         # on the PaPiRus display, as fast as possible
         # @example Simulate to PaPiRus display
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
         #   gps.map.simulate(track:'track 1')
         def simulate(track:)
-            if track = @tracks.find{|t| t.name === track}
+            setCurrentTrack(name: track)
+            if track = @tracks.find{|t| t.currentTrack}
                 oldTrack = @funkygps.signal.clearSignal
                 addSignal(trackpoint:track.trackpoints.shift)
                 addSignal(trackpoint:track.trackpoints.shift)
@@ -181,7 +204,11 @@ class FunkyGPS
             out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
             out << @funkygps.signal.to_svg
             out << @tracks.map { |track| track.to_svg(rotate:{degrees: -(@funkygps.signal.currenDirection), x: @funkygps.signal.lastPos.displayX, y: @funkygps.signal.lastPos.displayY}) }.join("\n")
-            #out << @tracks.map { |track| track.to_svg }.join("\n")
+            # are we not seeing the current track?
+            STDERR.puts [activeTrack.distanceTo(other:@funkygps.signal.lastPos), @viewbox.realWidth / 2].inspect
+            if activeTrack.distanceTo(other: @funkygps.signal.lastPos) > @viewbox.realWidth / 2
+                STDERR.puts "track off screen, add pointer"
+            end
             out << @waypoints.map { |wp| wp.to_svg }.join("\n")
             out << %{</svg>}
             out
