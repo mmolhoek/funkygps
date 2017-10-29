@@ -5,6 +5,7 @@ require_relative 'map/coordinate'
 
 class FunkyGPS
     class Map
+        # @return [FunkyGPS] The main contoller instance
         attr_reader :funkygps, :gps, :tracks, :waypoints, :x, :y, :viewbox
         def initialize(funkygps:)
             @funkygps = funkygps
@@ -185,13 +186,15 @@ class FunkyGPS
             track.trackpoints.map{|tp|tp.map = self; tp}
             @tracks << track
         end
-        # width of map in meters
+        # Will return the width of the loaded map in meters
+        # @return [Integer] The real width in meters of the map
         def realWidth
             topLeft = Coordinate.new(lat:minLats, lng:minLons)
             topRight = Coordinate.new(lat:maxLats, lng:minLons)
             topLeft.distanceTo(other:topRight)
         end
-        # Map height in meters
+        # Will return the height of the loaded map in meters
+        # @return [Integer] The real height in meters of the map
         def realHeight
             topRight = Coordinate.new(lat:maxLats, lng:minLons)
             bottomRight = Coordinate.new(lat:maxLats, lng:maxLons)
