@@ -46,6 +46,27 @@ class FunkyGPS
             @track.trackpoints[-2].bearingTo(other:@track.trackpoints[-1])
         end
 
+        # @return [Array<Trackpoint>] all trackpoints, but with added trackpoints in such a way that no indual distance between two point is larger then `distance`
+        # @param [Array<Trackpoint>] trackpoints The track to split
+        # @param [Integer] distance If two sequential points have a distance between them larger then this, a Coordinate will be added in the middle of them
+        def splitTrackpoints(trackpoints:, distance:15)
+            trackpoints.each_slice(2).map { |point1, point2| splitPointsUntilSmallerThen(point1: point1, point2: point2, distance: distance) }.flatten
+        end
+
+        #Split two points, adding a point in the middle if distance is longer than distance
+        #@param [Coordinate] point1 The first point
+        #@param [Coordinate] point2 The second point
+        # @param [Integer] distance If the points have a distance between them larger then this, a Coordinate will be added in the middle of them
+        def splitPointsUntilSmallerThen(point1:, point2:, distance:)
+            return point1 unless point2 #last point in uneven track is empty
+            if point1.distanceTo(other:point2) > distance
+                # return the split set, but split them as well if there are still longer distances
+                return splitTrackpoints(trackpoints: [point1, point1.midpointTo(other:point2), point2], distance: distance)
+            else
+                return [point1, point2]
+            end
+        end
+
         # Simulate a track by moving from start to end trackpoints
         # at a x ms interval, creating an animated gif of the result
         # @example Simulate to an animated gif name track.gif
@@ -65,15 +86,15 @@ class FunkyGPS
             list = Magick::ImageList.new
             # tempTrack is used to restore the track when the simulation is finished
             tempTrack = clearTrack
-            # our track to simultae
-            simTrack = tempTrack.clone
+            # the trackpoints of this track, but split into chunks of max 15 meter
+            trackpoints = splitTrackpoints(trackpoints:tempTrack.trackpoints, distance: 15)
             # Start your engines...
-            startpoint = simTrack.trackpoints.shift
+            startpoint = trackpoints.shift
             @track.addCoordinate(coordinate: startpoint)
-            @track.addCoordinate(coordinate: startpoint.endpoint(heading:startpoint.bearingTo(other: simTrack.trackpoints.first), distance: 5))
+            @track.addCoordinate(coordinate: startpoint.endpoint(heading:startpoint.bearingTo(other: trackpoints.first), distance: 5))
             list.read @funkygps.screen.to_image
-            simTrack.trackpoints.each do |coordinate|
-                @track.addCoordinate(coordinate: simTrack.trackpoints.shift)
+            trackpoints.each do |coordinate|
+                @track.addCoordinate(coordinate: trackpoints.shift)
                 list.read @funkygps.screen.to_image
             end
             # add the delay between images
