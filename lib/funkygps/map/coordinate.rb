@@ -17,17 +17,27 @@ class FunkyGPS
                 @x = radius * @loc.lng * Math::PI / 180.0
                 @y = radius * Math.log(Math.tan((Math::PI / 4.0) + ((@loc.lat * Math::PI / 180.0) / 2.0)))
             end
+
             # Valid options are:
             # :units - valid val"ues are :miles, :kms, :or :nms (:meters is the default)
             # :formula - valid values are :flat or :sphere (:sphere is the default)
             def distanceTo(other:, options:{})
                 @loc.distance_to(other.loc, options)
             end
+
             # Returns heading in degrees between two coordinates
             # 0 is north, 90 is east, 180 is south, 270 is west,
             # 359...almost north again
             def bearingTo(other:)
                 @loc.heading_to(other.loc).round
+            end
+
+            # Calculates the coordinate that is located exactly in the middel of two coordinates
+            # @param  [Coordinate] other The other coordinate that we want to use to calc the middle between
+            # @return [Coordinate] The Coordinate that is exactly in between self and other
+            def midpointTo(other:)
+                pos = @loc.midpoint_to(other.loc)
+                Coordinate.new(lat: pos.lat, lng: pos.lng, map:@map)
             end
 
             def endpoint(heading:, distance:)
@@ -57,8 +67,15 @@ class FunkyGPS
                 @name = name
                 @icon = icon
             end
+            # Creates a svg representing the waypoint as a dot with a text if name is given
+            # @return [String] The svg representing the waypoint with a text if name is given
+            # @todo Make the text appear right or left depending of the available space on screen
             def to_svg
-               %{<g><circle cx="#{displayX}" cy="#{displayY}" r="2" style="fill:none;stroke:black"/></g>\n}
+                out = %{<g><circle cx="#{displayX}" cy="#{displayY}" r="2" style="fill:none;stroke:black"/></g>\n}
+                if name
+                    out << %{<text x="#{displayX-20}" y="#{displayY-20}" fill="black">#{@name}</text>}
+                end
+                out
             end
         end
     end

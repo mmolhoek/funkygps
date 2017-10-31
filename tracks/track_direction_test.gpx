@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GPS Visualizer Sandbox http://www.gpsvisualizer.com/draw/" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+	<wpt lat="52.3728023" lon="4.8935616">
+		<name>dam</name>
+	</wpt>
+	<wpt lat="52.3743547" lon="4.8952246">
+		<name>beursplein</name>
+	</wpt>
+	<wpt lat="52.3729579" lon="4.9039739">
+		<name>start track</name>
+	</wpt>
+	<wpt lat="52.3720229" lon="4.9055887">
+		<name>montelbaantoren</name>
+	</wpt>
+	<wpt lat="52.3691013" lon="4.9027026">
+		<name>hema</name>
+	</wpt>
+	<wpt lat="52.3685904" lon="4.901222">
+		<name>waterlooplein</name>
+	</wpt>
+	<wpt lat="52.367968" lon="4.8994839">
+		<name>stadhuis</name>
+	</wpt>
+	<wpt lat="52.3730086" lon="4.9038667">
+		<name>thuis (end)</name>
+	</wpt>
+	<trk>
+		<name>track</name>
+		<desc>Length: 0.303 km (0.188 mi)</desc>
+		<trkseg>
+			<trkpt lat="52.3720851" lon="4.9004388"></trkpt>
+			<trkpt lat="52.3722652" lon="4.899677"></trkpt>
+			<trkpt lat="52.3727401" lon="4.8999667"></trkpt>
+			<trkpt lat="52.372989" lon="4.9001706"></trkpt>
+			<trkpt lat="52.3730218" lon="4.9002671"></trkpt>
+			<trkpt lat="52.373048" lon="4.9004441"></trkpt>
+			<trkpt lat="52.3729399" lon="4.9010289"></trkpt>
+			<trkpt lat="52.3721178" lon="4.9004763"></trkpt>
+		</trkseg>
+	</trk>
+	<trk>
+		<name>gps</name>
+		<desc>Length: 3.298 km (2.049 mi)</desc>
+		<trkseg>
+			<trkpt lat="52.3729595" lon="4.9039793"></trkpt>
+			<trkpt lat="52.3720884" lon="4.9055779"></trkpt>
+			<trkpt lat="52.3712696" lon="4.9037325"></trkpt>
+			<trkpt lat="52.3708503" lon="4.9042583"></trkpt>
+			<trkpt lat="52.3707259" lon="4.9039578"></trkpt>
+			<trkpt lat="52.3702608" lon="4.9044943"></trkpt>
+			<trkpt lat="52.3696581" lon="4.9030781"></trkpt>
+			<trkpt lat="52.3690555" lon="4.9024558"></trkpt>
+			<trkpt lat="52.3685707" lon="4.9019408"></trkpt>
+			<trkpt lat="52.3687607" lon="4.9003422"></trkpt>
+			<trkpt lat="52.3680008" lon="4.8993766"></trkpt>
+			<trkpt lat="52.3681318" lon="4.8986685"></trkpt>
+			<trkpt lat="52.3682301" lon="4.89766"></trkpt>
+			<trkpt lat="52.3683152" lon="4.8965549"></trkpt>
+			<trkpt lat="52.3685183" lon="4.8960614"></trkpt>
+			<trkpt lat="52.3699136" lon="4.8973918"></trkpt>
+			<trkpt lat="52.3702018" lon="4.8959541"></trkpt>
+			<trkpt lat="52.3703329" lon="4.8955894"></trkpt>
+			<trkpt lat="52.3704573" lon="4.8949134"></trkpt>
+			<trkpt lat="52.3708896" lon="4.8950422"></trkpt>
+			<trkpt lat="52.371453" lon="4.8955786"></trkpt>
+			<trkpt lat="52.3717608" lon="4.8960292"></trkpt>
+			<trkpt lat="52.3724814" lon="4.89398"></trkpt>
+			<trkpt lat="52.3726255" lon="4.8930895"></trkpt>
+			<trkpt lat="52.3731953" lon="4.8934007"></trkpt>
+			<trkpt lat="52.3734312" lon="4.8937118"></trkpt>
+			<trkpt lat="52.3740076" lon="4.8944306"></trkpt>
+			<trkpt lat="52.3744726" lon="4.8950315"></trkpt>
+			<trkpt lat="52.3751931" lon="4.8959649"></trkpt>
+			<trkpt lat="52.3756647" lon="4.8965442"></trkpt>
+			<trkpt lat="52.3761035" lon="4.8971987"></trkpt>
+			<trkpt lat="52.3765685" lon="4.8978209"></trkpt>
+			<trkpt lat="52.3768698" lon="4.8982501"></trkpt>
+			<trkpt lat="52.3769288" lon="4.8984861"></trkpt>
+			<trkpt lat="52.3768436" lon="4.8987329"></trkpt>
+			<trkpt lat="52.376693" lon="4.8991084"></trkpt>
+			<trkpt lat="52.376765" lon="4.9005353"></trkpt>
+			<trkpt lat="52.3768567" lon="4.9019837"></trkpt>
+			<trkpt lat="52.3764899" lon="4.902488"></trkpt>
+			<trkpt lat="52.3759398" lon="4.9031425"></trkpt>
+			<trkpt lat="52.3757105" lon="4.903239"></trkpt>
+			<trkpt lat="52.3754354" lon="4.9032819"></trkpt>
+			<trkpt lat="52.3751014" lon="4.9034536"></trkpt>
+			<trkpt lat="52.3749507" lon="4.9036896"></trkpt>
+			<trkpt lat="52.3748721" lon="4.9038184"></trkpt>
+			<trkpt lat="52.3747084" lon="4.9037111"></trkpt>
+			<trkpt lat="52.3744464" lon="4.9036038"></trkpt>
+			<trkpt lat="52.3742172" lon="4.9036896"></trkpt>
+			<trkpt lat="52.3739814" lon="4.9038506"></trkpt>
+			<trkpt lat="52.3738373" lon="4.9039364"></trkpt>
+			<trkpt lat="52.3737521" lon="4.9038398"></trkpt>
+			<trkpt lat="52.3735229" lon="4.9030995"></trkpt>
+			<trkpt lat="52.3734377" lon="4.9030888"></trkpt>
+			<trkpt lat="52.3730119" lon="4.9038613"></trkpt>
+		</trkseg>
+	</trk>
+</gpx>

@@ -11,11 +11,11 @@ class FunkyGPS
                 # returns an array containing all the {FunkyGPS::GPS::WayPoint}'s
                 def waypoints
                     @doc.xpath('//wpt').map do |waypoint|
-                        WayPoint.new(lat: waypoint.attr('lat'), lng: waypoint.attr('lon'), name: (waypoint.xpath('name').first.content rescue 'unknown'), icon: (waypoint.xpath('sym').first.content rescue nil))
+                        WayPoint.new(lat: waypoint.attr('lat'), lng: waypoint.attr('lon'), name: (waypoint.xpath('name').first.content rescue nil), icon: (waypoint.xpath('sym').first.content rescue nil))
                     end
                 end
-                # returns an array containing all the {FunkyGPS::GPS::Track}'s
-                # which in turn should contain all the {FunkyGPS::GPS::Coordinate}'s of each {FunkyGPS::GPS::Track}
+                # @return [Array<Track>] All the Tracks found in the file
+                # @see FunkyGPS::GPS::Coordinate
                 def tracks
                     @doc.xpath('//trk').map do |track|
                         Track.new(trackpoints: track.xpath('.//trkpt').map{|pt| Coordinate.new(lat: pt.attr('lat'), lng: pt.attr('lon'))}, name: (track.xpath('name').first.content rescue 'unknown'))

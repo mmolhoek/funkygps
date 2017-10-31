@@ -1,3 +1,6 @@
+# @author Mischa Molhoek
+# @see https://github.com/mmolhoek/funkygps GPS too be used on a RaspBerry PI with an PaPiRus display attached
+#
 # All FunkyGPS defaults are stored here
 class FunkyGPS
     DEFAULTMETRICS = :meters # Sets the default metrics unit to meters
@@ -8,6 +11,19 @@ class FunkyGPS
 
     # Show some extra STDERR.puts info when debugging
     VERBOSE = false
+
+    # Line settings
+    # Active track
+    ACTIVETRACKLINEPARAMS='' # black line
+
+    # Active track direction pointer
+    ACTIVETRACKDIRECTIONLINE='stroke-dasharray="3, 3"'
+
+    # how many degrees left and right of 0 and 180 off we have to be before short arrow kicks in
+    ACTIVETRACKDIRECTIONDEGREEOFFSET=35
+
+    # GPS signals track
+    GPSSIGNALTRACKLINEPARAMS='stroke-dasharray="2, 6"'
 
     # FunkyGPS base error
     class Exception < ::StandardError; end
@@ -44,8 +60,8 @@ class FunkyGPS
         @signal = Signal.new(funkygps:self)
         #Initialize the map
         @map = Map.new(funkygps:self)
-        #Initialize the menu (todo)
-        @menu = nil #FunkyGPS::Menu::Screen.new(funkygps: self)
+        #todo: menu not yet implemented
+        @menu = nil
         if file
             @map.loadGPSFile(file: file)
         else
