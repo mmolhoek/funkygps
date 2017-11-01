@@ -63,11 +63,7 @@ class FunkyGPS
         @map = Map.new(funkygps:self)
         #todo: menu not yet implemented
         @menu = nil
-        if file
-            @map.loadGPSFile(file: file)
-        else
-            @map.loadGPSFilesFrom(folder: trackfolder||DEFAULTTRACKFOLDER)
-        end
+        @map.loadGPSFile(file: file) if file
     end
     # Are we fullscreen?
     def fullscreen
