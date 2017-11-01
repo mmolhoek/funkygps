@@ -215,8 +215,8 @@ class FunkyGPS
 
         end
         # Creates a arrow pointing to the track and the distance to it
-        # @param  [Coordinate] The Coordinate that is the trackpoint on the track closest to us
-        # @param  [Integer] The distance from or current location to Coordinate in meters
+        # @param  [Coordinate] coordinate The Coordinate that is the trackpoint on the track closest to us
+        # @param  [Integer] distance The distance from or current location to Coordinate in meters
         # @return [String] The svg representing the arrow with distance
         def distanceToTrackIndicator(coordinate:, distance:)
             signal = @funkygps.signal.lastPos
