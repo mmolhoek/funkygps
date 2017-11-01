@@ -190,14 +190,23 @@ class FunkyGPS
             # are we not seeing the current track?
             if distance > (@viewbox.realWidth / 2)
                 STDERR.puts "track off screen, add pointer" if FunkyGPS::VERBOSE
-                out << distanceToTrackIndicator(trackpoint:closestTrackPoint, distance: distance)
+                out << distanceToTrackIndicator(coordinate:closestTrackPoint, distance: distance)
             end
             out << @waypoints.map { |wp| wp.to_svg }.join("\n")
             out << %{</svg>}
             out
         end
 
-        # Should we use a short directions arrow or a long one? depends on the ACTIVETRACKDIRECTIONDEGREEOFFSET
+        # Should we use a short directions arrow or a long one? depends on the ACTIVETRACKDIRECTIONDEGREEOFFSET (ACTO)
+        #   ACTO - 365/0  + ACTO
+        # -----------------------
+        # |       \******/      |
+        # |        \****/       |
+        # |        /****\       |
+        # |       /******\      |
+        # -----------------------
+        #   ACTO -  180  + ACTO
+        # @return [Boolean] Should we use short arrow?
         # @param [Integer] heading The current heading
         def shortarrow(heading:)
             heading.between?(0,FunkyGPS::ACTIVETRACKDIRECTIONDEGREEOFFSET) ||
@@ -206,10 +215,12 @@ class FunkyGPS
 
         end
         # Creates a arrow pointing to the track and the distance to it
+        # @param  [Coordinate] The Coordinate that is the trackpoint on the track closest to us
+        # @param  [Integer] The distance from or current location to Coordinate in meters
         # @return [String] The svg representing the arrow with distance
-        def distanceToTrackIndicator(trackpoint:, distance:)
+        def distanceToTrackIndicator(coordinate:, distance:)
             signal = @funkygps.signal.lastPos
-            heading = signal.bearingTo(other:trackpoint) - @funkygps.signal.currenDirection
+            heading = signal.bearingTo(other:coordinate) - @funkygps.signal.currenDirection
             space =  (shortarrow(heading: heading) ? @viewbox.height : @viewbox.width) / 8 # / 2 to get half the screen, / 4 to get 4 equal parts = / 8
             startpoint = signal.endpoint(heading:heading, distance:space)
             finishpoint = startpoint.endpoint(heading:heading, distance:space)
