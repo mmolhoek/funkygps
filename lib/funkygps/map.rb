@@ -219,7 +219,7 @@ class FunkyGPS
             %{<path d="M #{startpoint.displayX} #{startpoint.displayY} L #{finishpoint.displayX} #{finishpoint.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
             %{<path d="M #{finishpoint.displayX} #{finishpoint.displayY} L #{arrowarm1.displayX} #{arrowarm1.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
             %{<path d="M #{finishpoint.displayX} #{finishpoint.displayY} L #{arrowarm2.displayX} #{arrowarm2.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
-            %{<text x="#{middle.displayX-20}" y="#{middle.displayY-20}" fill="black">#{distance.round}m (#{heading})</text>}
+            %{<text x="#{middle.displayX-20}" y="#{middle.displayY-20}" fill="black">#{distance.round}#{FunkyGPS::DEFAULTMETRICSLABEL} (#{heading})</text>}
             #transform="translate(#{middle.displayX}, #{middle.displayY}) rotate(#{heading+90}) translate(-#{middle.displayX}, -#{middle.displayY})"
         end
 

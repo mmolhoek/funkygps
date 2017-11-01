@@ -4,6 +4,7 @@
 # All FunkyGPS defaults are stored here
 class FunkyGPS
     DEFAULTMETRICS = :meters # Sets the default metrics unit to meters
+    DEFAULTMETRICSLABEL = 'm'  # Sets the default metrics label
 
     # Sets the default folder, where FunkyGPS will look for tracks
     # which will be loaded when calling {FunkyGPS.load}
