@@ -135,9 +135,12 @@ puts "the current bearing of the signal is #{ gps.map.signal.currenDirection } d
 ## Development
 ```bash
 # Install enviroment with bundler
-$ (sudo) gem install bundler # if you did not already
-$ bundle # installs all gems
-# run the unit tests right from the doumentation
+$ (sudo) gem install bundler # If you did not already
+$ bundle # Installs all gems
+# Activate yard doctest plugin
+$ bundle exec yard config load_plugins true
+$ bundle exec yard config -a autoload_plugins yard-doctest
+# Run the unit tests right from the doumentation
 bundle exec rake yarn:doctest
 # Create the documentation with
 bundle exec rake yarn
