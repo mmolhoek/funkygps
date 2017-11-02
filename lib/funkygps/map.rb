@@ -5,8 +5,14 @@ require_relative 'map/coordinate'
 
 class FunkyGPS
     class Map
-        # @return [FunkyGPS] The main contoller instance
-        attr_reader :funkygps, :gps, :tracks, :waypoints, :x, :y, :viewbox
+        # @return [FunkyGPS] funkygps The main contoller instance
+        attr_reader :funkygps
+        # @return [Array<Track>] tracks All currently available tracks
+        attr_reader :tracks
+        # @return [Array<Waypoint>] waypoints All currently available waypoints
+        attr_reader :waypoints #, :x, :y, :viewbox
+        # @note A waypoint is a spot on the map with a name and optional icon representing a Point Of Intrest
+        # @see http://www.gpsvisualizer.com/draw/ A track and waypoints can be made with this free tool for example
         def initialize(funkygps:)
             @funkygps = funkygps
             clearTracks
@@ -55,6 +61,8 @@ class FunkyGPS
         #   gps.map.clearTracks
         #   gps.map.tracks.length #=> 0
         def clearTracks
+            @x=[]
+            @y=[]
             @tracks = []
             @waypoints = []
         end
@@ -181,7 +189,7 @@ class FunkyGPS
         def to_svg
             out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
             out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
-            out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
+            out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.menu.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
             out << @funkygps.signal.to_svg
             out << @funkygps.signal.trackhistory_to_svg
             out << activeTrack.to_svg(rotate:{degrees: -(@funkygps.signal.currenDirection), x: @funkygps.signal.lastPos.displayX, y: @funkygps.signal.lastPos.displayY})

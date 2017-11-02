@@ -17,7 +17,7 @@ class FunkyGPS
             0
         end
         def mapWidth
-            #@funkygps.settings.map.fullscreen ? @screen.width : @screen.width
+            #@funkygps.settings.menu.fullscreen ? @screen.width : @screen.width
             @screen.width
         end
         def mapHeight
