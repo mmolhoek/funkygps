@@ -2,17 +2,19 @@ require_relative 'loaders'
 require_relative 'loaders/gpx'
 require_relative 'map/track'
 require_relative 'map/coordinate'
+require_relative 'viewbox'
 
 class FunkyGPS
+    # The Map is the place where all the {Track}s and {Point}s are placed on
     class Map
         # @return [FunkyGPS] funkygps The main contoller instance
         attr_reader :funkygps
         # @return [Array<Track>] tracks All currently available tracks
         attr_reader :tracks
-        # @return [Array<Waypoint>] waypoints All currently available waypoints
-        attr_reader :waypoints #, :x, :y, :viewbox
-        # @note A waypoint is a spot on the map with a name and optional icon representing a Point Of Intrest
-        # @see http://www.gpsvisualizer.com/draw/ A track and waypoints can be made with this free tool for example
+        # @return [Array<Point>] points All currently available points
+        attr_reader :points #, :x, :y, :viewbox
+        # @note A point is a spot on the map with a name and optional icon representing a Point Of Intrest
+        # @see http://www.gpsvisualizer.com/draw/ A track and points can be made with this free tool for example
         def initialize(funkygps:)
             @funkygps = funkygps
             clearTracks
@@ -29,7 +31,7 @@ class FunkyGPS
             Dir["#{folder}/*"].each do |file|
                 begin
                     loadGPSFile(file: file)
-                rescue FunkyGPS::ExtentionNotSupported
+                rescue FunkyGPS::FunkyException::ExtentionNotSupported
                     STDERR.puts "skipping #{file}, format not yet supported" if FunkyGPS::VERBOSE
                     next
                 end
@@ -38,7 +40,7 @@ class FunkyGPS
         # Will load any gps file type that is supported
         # if your gps filetype is not supported, it's very easy
         # to add support for it :). just clone this repo
-        # have a look at {FunkyGPS::Map::GPSFormats::GPX} for an example
+        # have a look at {FunkyGPS::GPSFormats::GPX} for an example
         # create your own, make a PR and submit it.
         # @example Load gps file from test tracks folder
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
@@ -49,7 +51,7 @@ class FunkyGPS
                 raise NameError unless type
                 loader = GPSFormats.const_get("#{type[1..-1].upcase}").new(map: self, file:file)
             rescue NameError
-                raise ExtentionNotSupported, "The GPS::GPSFormats::#{type} if file #{file} does not seem to be supported yet. See documentation on how to add it yourself :)"
+                raise FunkyException::ExtentionNotSupported, "The GPS::GPSFormats::#{type} if file #{file} does not seem to be supported yet. See documentation on how to add it yourself :)"
             end
             loader.load(map:self)
         end
@@ -61,17 +63,23 @@ class FunkyGPS
         #   gps.map.clearTracks
         #   gps.map.tracks.length #=> 0
         def clearTracks
-            @x=[]
-            @y=[]
+            @x = nil
+            @y = nil
+            @lats = nil
+            @lons = nil
+            @minLons = nil
+            @minLats = nil
+            @minX = nil
+            @minY = nil
             @tracks = []
-            @waypoints = []
+            @points = []
         end
 
         # Set the current active Track
         # @param [String] name The name of the track to set as current active track
         # @example Set a track active
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
-        #   gps.map.activeTrack.name #=> raise FunkyGPS::NoActiveTrackFound, "No track is active or found"
+        #   gps.map.activeTrack.name #=> raise FunkyGPS::FunkyException::NoActiveTrackFound, "No track is active or found"
         #   gps.map.setActiveTrack(name: 'track 1')
         #   gps.map.activeTrack.name #=> 'track 1'
         def setActiveTrack(name:)
@@ -85,13 +93,13 @@ class FunkyGPS
         # @see #setActiveTrack
         def activeTrack
             track = @tracks.find { |tr| tr.activeTrack }
-            raise NoActiveTrackFound, "No track is active or found" unless track
+            raise FunkyException::NoActiveTrackFound, "No track is active or found" unless track
             return track
         end
 
-        # Adds a waypoint to the waypointlist
-        def addWaypoint(waypoint:)
-            @waypoints << waypoint
+        # Adds a point to the pointslist
+        def addPoint(point:)
+            @points << point
         end
 
         # Adds a track to the tracklist
@@ -104,14 +112,15 @@ class FunkyGPS
         def realWidth
             topLeft = Coordinate.new(lat:minLats, lng:minLons)
             topRight = Coordinate.new(lat:maxLats, lng:minLons)
-            topLeft.distanceTo(other:topRight)
+            topLeft.distanceTo(point:topRight)
         end
+
         # Will return the height of the loaded map in meters
         # @return [Integer] The real height in meters of the map
         def realHeight
             topRight = Coordinate.new(lat:maxLats, lng:minLons)
             bottomRight = Coordinate.new(lat:maxLats, lng:maxLons)
-            topRight.distanceTo(other:bottomRight)
+            topRight.distanceTo(point:bottomRight)
         end
 
         # @return [Float] The width of the active map in pixels
@@ -128,6 +137,7 @@ class FunkyGPS
         def maxX
             @maxX ||= x.max
         end
+
         # @return [Float] The min width of the active map in pixels
         def minX
             @minX ||= x.min
@@ -165,74 +175,53 @@ class FunkyGPS
 
         # @return [Float] All x positions
         def x
-            @x ||= @tracks.map{|track| track.trackpoints.map{|p| p.x}}.flatten + @waypoints.map{|wp| wp.x} + [@funkygps.signal.lastPos.x]
+            @x ||= activeTrack.points.map(&:x) + @points.map(&:x) + [@funkygps.signal.lastPos.x]
         end
 
         # This
         # @return [Float] All latitudes
         def lats
-            @lats ||= activeTrack.trackpoints.map{|p| p.latitude} + @waypoints.map{|wp| wp.latitude} + (@funkygps.signal.lastPos ? [@funkygps.signal.lastPos.latitude] : [])
+            @lats ||= activeTrack.points.map(&:latitude) + @points.map(&:latitude) + (@funkygps.signal.lastPos ? [@funkygps.signal.lastPos.latitude] : [])
         end
 
         # @return [Float] All y positions
         def y
-            @y ||= activeTrack.trackpoints.map{|p| p.y} + @waypoints.map{|wp| wp.y} + [@funkygps.signal.lastPos.y]
+            @y ||= activeTrack.points.map(&:y) + @points.map(&:y) + [@funkygps.signal.lastPos.y]
         end
 
         # @return [Float] All longitudes
         def lons
-            @lons ||= @tracks.map{|track| track.trackpoints.map{|p| p.longitude}}.flatten + @waypoints.map{|wp| wp.longitude} + (@funkygps.signal.lastPos ? [@funkygps.signal.lastPos.longitude] : [])
-        end
-
-        # Create an SVG of the map. This includes the Signal, the Signals track history, the active track if visible and otherwise an indicator where the track is (direction and distance).
-        # @return [String] The svg containing the whole track, but with a view on the last gps location
-        def to_svg
-            out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
-            out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
-            out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.menu.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.x} #{@viewbox.y} #{@viewbox.width} #{@viewbox.height}">\n}
-            out << @funkygps.signal.to_svg
-            out << @funkygps.signal.trackhistory_to_svg
-            out << activeTrack.to_svg(rotate:{degrees: -(@funkygps.signal.currenDirection), x: @funkygps.signal.lastPos.displayX, y: @funkygps.signal.lastPos.displayY})
-            closestTrackPoint = activeTrack.nearestTrackpointTo(other:@funkygps.signal.lastPos)
-            distance = closestTrackPoint.distanceTo(other: @funkygps.signal.lastPos)
-            # are we not seeing the current track?
-            if distance > (@viewbox.realWidth / 2)
-                STDERR.puts "track off screen, add pointer" if FunkyGPS::VERBOSE
-                out << distanceToTrackIndicator(coordinate:closestTrackPoint, distance: distance)
-            end
-            out << @waypoints.map { |wp| wp.to_svg }.join("\n")
-            out << %{</svg>}
-            out
+            @lons ||= activeTrack.points.map(&:longitude) + @points.map(&:longitude) + (@funkygps.signal.lastPos ? [@funkygps.signal.lastPos.longitude] : [])
         end
 
         # Should we use a short directions arrow or a long one? depends on the ACTIVETRACKDIRECTIONDEGREEOFFSET (ACTO)
-        #   ACTO - 365/0  + ACTO
-        # -----------------------
-        # |       \******/      |
-        # |        \****/       |
-        # |        /****\       |
-        # |       /******\      |
-        # -----------------------
-        #   ACTO -  180  + ACTO
+        #     ACTO - 365/0  + ACTO
+        #   -----------------------
+        #   |       \******/      |
+        #   |        \****/       |
+        #   |        /****\       |
+        #   |       /******\      |
+        #   -----------------------
+        #     ACTO -  180  + ACTO
         # @return [Boolean] Should we use short arrow?
         # @param [Integer] heading The current heading
         def shortarrow(heading:)
             heading.between?(0,FunkyGPS::ACTIVETRACKDIRECTIONDEGREEOFFSET) ||
             heading.between?(180-FunkyGPS::ACTIVETRACKDIRECTIONDEGREEOFFSET, 180+FunkyGPS::ACTIVETRACKDIRECTIONDEGREEOFFSET) ||
             heading.between?(365-FunkyGPS::ACTIVETRACKDIRECTIONDEGREEOFFSET, 365)
-
         end
+
         # Creates a arrow pointing to the track and the distance to it
-        # @param  [Coordinate] coordinate The Coordinate that is the trackpoint on the track closest to us
+        # @param  [Coordinate] coordinate The Coordinate that is the points on the track closest to us
         # @param  [Integer] distance The distance from or current location to Coordinate in meters
         # @return [String] The svg representing the arrow with distance
         def distanceToTrackIndicator(coordinate:, distance:)
             signal = @funkygps.signal.lastPos
-            heading = signal.bearingTo(other:coordinate) - @funkygps.signal.currenDirection
+            heading = signal.bearingTo(point:coordinate) - @funkygps.signal.currenDirection
             space =  (shortarrow(heading: heading) ? @viewbox.height : @viewbox.width) / 8 # / 2 to get half the screen, / 4 to get 4 equal parts = / 8
             startpoint = signal.endpoint(heading:heading, distance:space)
             finishpoint = startpoint.endpoint(heading:heading, distance:space)
-            middle = startpoint.midpointTo(other:finishpoint)
+            middle = startpoint.midpointTo(point:finishpoint)
             arrowarm1 = finishpoint.endpoint(heading:heading+135, distance:8)
             arrowarm2 = finishpoint.endpoint(heading:heading+225, distance:8)
             %{<path d="M #{startpoint.displayX} #{startpoint.displayY} L #{finishpoint.displayX} #{finishpoint.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
@@ -242,31 +231,25 @@ class FunkyGPS
             #transform="translate(#{middle.displayX}, #{middle.displayY}) rotate(#{heading+90}) translate(-#{middle.displayX}, -#{middle.displayY})"
         end
 
-    end
-    class ViewBox
-        attr_reader :map, :funkygps
-        def initialize(map:, funkygps:)
-            @map = map
-            @funkygps = funkygps
-        end
-        def width
-            @funkygps.screen.width
-        end
-        def height
-            @funkygps.screen.height
-        end
-        def x
-            @funkygps.signal.lastPos.displayX - (width/2)
-        end
-        def y
-            @funkygps.signal.lastPos.displayY - (height/2)
-        end
-        def realWidth
-            @map.realWidth / @map.width * width
-        end
-        def realHeight
-            @map.realHeight / @map.height * height
+        # Create an SVG of the map. This includes the Signal, the Signals track history, the active track if visible and otherwise an indicator where the track is (direction and distance).
+        # @return [String] The svg containing the whole track, but with a view on the last gps location
+        def to_svg
+            out = %{<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n}
+            out << %{<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n}
+            out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.menu.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.viewboxSettings}">\n}
+            out << @funkygps.signal.to_svg
+            out << @funkygps.signal.trackhistory_to_svg
+            out << activeTrack.to_svg(rotate:{degrees: -(@funkygps.signal.currenDirection), x: @funkygps.signal.lastPos.displayX, y: @funkygps.signal.lastPos.displayY})
+            closest= activeTrack.nearest_point_to(point:@funkygps.signal.lastPos)
+            distance = closest.distanceTo(point: @funkygps.signal.lastPos)
+            # are we not seeing the current track?
+            if distance > (@viewbox.realWidth / 2)
+                STDERR.puts "track off screen, add pointer" if FunkyGPS::VERBOSE
+                out << distanceToTrackIndicator(coordinate:closest, distance: distance)
+            end
+            out << @points.map { |wp| wp.to_svg }.join("\n")
+            out << %{</svg>}
+            out
         end
     end
 end
-

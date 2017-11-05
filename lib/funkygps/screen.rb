@@ -26,7 +26,9 @@ class FunkyGPS
     end
     class Screen
         attr_reader :display, :funkygps
+
         attr_accessor :fullscreen, :landscape
+
         def initialize(funkygps:, fullscreen:, landscape:, testdisplay:nil)
             @funkygps = funkygps
             @fullscreen = fullscreen
@@ -38,25 +40,31 @@ class FunkyGPS
             end
             @layout = Layout.new(funkygps: funkygps, screen:self)
         end
+
         def update
             raise NoMapFound, "your have to load a gps track first" unless funkygps.map
             #show it on the PaPiRus display
             @display.show(to_bit_stream, 'P')
         end
+
         def width
             @display.width
         end
+
         def height
             @display.height
         end
+
         def to_bit_stream
             Magick::Image::from_blob(to_svg).first.to_bit_stream(width, height)
         end
+
         # toggle the map fullscreen state dhow the whole map or
         # together with all instuments
         def toggleFullscreen
             @fullscreen = !@fullscreen
         end
+
         # will request the svg of all screen parts (map, menu and info)
         # and merge them in the active layout and send it to the display
         def to_svg
@@ -71,12 +79,21 @@ class FunkyGPS
                 out
             end
         end
-        # Used to create all separate parts of the display like menu, and map
+
+        # Used to create all separate parts of the display like menu, and map. We do this be creating separate SVGs of all elements and dumping them as images at a certain x,y,w,h on the screen
+        # @param [Float] x The x position to put the SVG
+        # @param [Float] y The x position to put the SVG
+        # @param [Float] width The width to use when creating the SVG
+        # @param [Float] height The height to use when creating the SVG
+        # @param [String] svg The SVG
         def add_svg(x:, y:, width:, height:, svg:)
             %{<image x="#{x}" y="#{y}" width="#{width}" height="#{height}" xlink:href='#{embed_svg(svg: svg)}' />\n}
         end
+
         # helper for add_svg, as we dont have the possibility to pass
         # the svg as blob (href="data:... svg is not supported by image magick yet)
+        # @param [String] svg The SVG to put in the tempfile
+        # @return [String] path to the tempfile that hold the SVG
         def embed_svg(svg:)
             t  = Tempfile.new(['embed','.svg'])
             t.write svg
@@ -84,13 +101,15 @@ class FunkyGPS
             t.path
         end
 
-        # Create an image of display, used to create an gif animation of a route,
-        # adding an image to the gif for each trackpoint.
+        # Create an image of the screen, used to create an gif animation of a route,
+        # adding an image to the gif for each point.
+        # @return [String] path to the tempfile that hold the SVG of the screen
         def to_image()
             embed_svg(svg: to_svg)
         end
 
-        # Create ascii art or image of display for debugging purpose
+        # Create ASCII art or a PNG image of display for debugging purpose
+        # @param [String] name The name to use for the image, if name is 'ascii', ASCII art will be dumped to the terminal, otherwise it will be the name of the image, can be anything ImageMagick can write to
         def to_file(name: 'display.png')
             if name === 'ascii'
                 system "clear"

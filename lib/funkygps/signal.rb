@@ -2,17 +2,17 @@ class FunkyGPS
     # The Signal class holds all info received from the hardware GPS
     # it will store all received GPS Coordinates in its @attr(track) list
     class Signal
-        # @return [Map] map The map area containing all tracks, waypoints, etc
+        # @return [Map] map The map area containing all tracks, points, etc
         # @return [Map::Track] track The track received so for by the GPS
         attr_reader :funkygps, :map, :track
         # @param [FunkyGPS] funkygps The main control center
         def initialize(funkygps:)
             @funkygps = funkygps
             @map = @funkygps.map
-            @track = Map::Track.new(trackpoints: [], name: 'gps')
+            @track = Map::Track.new(points: [], name: 'gps')
         end
-        # Add the track
-        def loadTrack(track:)
+        # Set the track. This is used to fake a track as the signal. As if you received all track's points as gps signals
+        def setTrack(track:)
             @track = track
         end
         # Clears the current track, returning that track
@@ -22,52 +22,50 @@ class FunkyGPS
             @track.clearTrack
             previousTrack
         end
-        # Returns The amount of meters traveled at the current speed in seconds: time
-        # @return [Integer] meters traveled
+        # @return [Integer] The distance traveled after seconds:
         def distanceAfter(seconds:5)
             seconds * speed
         end
-        # Current speed, coming directly from GPS signal
-        # @todo getting the signal from the GPS hw
+        # @todo getting the speed from the GPS hw
         # @return [Integer] Current speed
         def speed
-            15
+            10
         end
         # The last know position
         # @return [Map::Coordinate] the last Coordinate of the signal's track
         def lastPos
-            @track.trackpoints.last
+            @track.points.last
         end
-        # The angle of the last know movement. This is either coming directly from the GPS
+        # The direction of the last know movement. This is either coming directly from the GPS
         # or is calculated with the last two coordinates of the signals's track
         # @todo getting the direction from the GPS hw
         # @return [Integer] degrees (0-365)
         def currenDirection
-            @track.trackpoints[-2].bearingTo(other:@track.trackpoints[-1])
+            @track.points[-2].bearingTo(point:@track.points[-1])
         end
 
-        # @return [Array<Trackpoint>] all trackpoints, but with added trackpoints in such a way that no indual distance between two point is larger then `distance`
-        # @param [Array<Trackpoint>] trackpoints The track to split
+        # @return [Array<Point>] all points, but with added points in such a way that no indual distance between two point is larger then `distance`
+        # @param [Array<Point>] points The track to split
         # @param [Integer] distance If two sequential points have a distance between them larger then this, a Coordinate will be added in the middle of them
-        def splitTrackpoints(trackpoints:, distance:15)
-            trackpoints.each_slice(2).map { |point1, point2| splitPointsUntilSmallerThen(point1: point1, point2: point2, distance: distance) }.flatten
+        def splitPoints(points:, distance:30)
+            points.each_slice(2).map { |point1, point2| splitPointsUntilSmallerThen(point1: point1, point2: point2, distance: distance) }.flatten
         end
 
-        #Split two points, adding a point in the middle if distance is longer than distance
+        #Split two points, adding a point in the middle if distance is longer than distance:
         #@param [Coordinate] point1 The first point
         #@param [Coordinate] point2 The second point
         # @param [Integer] distance If the points have a distance between them larger then this, a Coordinate will be added in the middle of them
         def splitPointsUntilSmallerThen(point1:, point2:, distance:)
             return point1 unless point2 #last point in uneven track is empty
-            if point1.distanceTo(other:point2) > distance
+            if point1.distanceTo(point:point2) > distance
                 # return the split set, but split them as well if there are still longer distances
-                return splitTrackpoints(trackpoints: [point1, point1.midpointTo(other:point2), point2], distance: distance)
+                return splitPoints(points: [point1, point1.midpointTo(point:point2), point2], distance: distance)
             else
                 return [point1, point2]
             end
         end
 
-        # Simulate a track by moving from start to end trackpoints
+        # Simulate a track by moving from start to end points
         # at a x ms interval, creating an animated gif of the result
         # @example Simulate to an animated gif name track.gif
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
@@ -82,29 +80,31 @@ class FunkyGPS
         #   gps.map.setActiveTrack(track:'name of track')
         #   gps.signal.simulateToGif(delay: 500)
         def simulateToGif(name: 'track.gif', delay: 100)
-            STDERR.puts "creating gif animation of track '#{track.name}' with #{track.nrOfTrackpoints} trackpoints to #{name} with #{delay} delay" if FunkyGPS::VERBOSE
+            STDERR.puts "creating gif animation of track '#{track.name}' with #{track.nrOfPoints} points to #{name} with #{delay} delay" if FunkyGPS::VERBOSE
             list = Magick::ImageList.new
             # tempTrack is used to restore the track when the simulation is finished
             tempTrack = clearTrack
-            # the trackpoints of this track, but split into chunks of max 15 meter
-            trackpoints = splitTrackpoints(trackpoints:tempTrack.trackpoints, distance: 15)
+            # the points of this track, but split into chunks of max 15 meter
+            STDERR.puts "nr points before splitPoints:#{tempTrack.points.length}" if FunkyGPS::VERBOSE
+            points = splitPoints(points:tempTrack.points, distance: 15)
+            STDERR.puts "nr points:#{points.length}" if FunkyGPS::VERBOSE
             # Start your engines...
-            startpoint = trackpoints.shift
+            startpoint = points.shift
             @track.addCoordinate(coordinate: startpoint)
-            @track.addCoordinate(coordinate: startpoint.endpoint(heading:startpoint.bearingTo(other: trackpoints.first), distance: 5))
+            @track.addCoordinate(coordinate: startpoint.endpoint(heading:startpoint.bearingTo(point: points.first), distance: 5))
             list.read @funkygps.screen.to_image
-            trackpoints.each do |coordinate|
-                @track.addCoordinate(coordinate: trackpoints.shift)
+            points.each do |coordinate|
+                @track.addCoordinate(coordinate: points.shift)
                 list.read @funkygps.screen.to_image
             end
             # add the delay between images
             list.each {|image| image.delay = delay } if delay
             list.write(name)
             # Restore track
-            @track.replaceTrackpoints(trackpoints: tempTrack.trackpoints) if tempTrack.trackpoints
+            @track.setPoints(points: tempTrack.points) if tempTrack.points
         end
 
-        # Simulate a track by moving from start to end trackpoints
+        # Simulate a track by moving from start to end points
         # on the PaPiRus display, as fast as possible
         # @example Simulate to PaPiRus display
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
@@ -116,13 +116,13 @@ class FunkyGPS
             # our track to simultae
             simTrack = tempTrack.clone
             # Start your engines...
-            @track.addCoordinate(coordinate: simTrack.trackpoints.shift)
-            simTrack.trackpoints.each do |coordinate|
-                @track.addCoordinate(coordinate: simTrack.trackpoints.shift)
+            @track.addCoordinate(coordinate: simTrack.points.shift)
+            simTrack.points.each do |coordinate|
+                @track.addCoordinate(coordinate: simTrack.points.shift)
                 @funkygps.screen.update
             end
             # Restore track
-            @track.replaceTrackpoints(trackpoints: tempTrack.trackpoints) if tempTrack.trackpoints
+            @track.setPoints(points: tempTrack.points) if tempTrack.points
         end
 
         # Draw the GPS track as dotted line.

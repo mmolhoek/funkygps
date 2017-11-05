@@ -1,47 +1,52 @@
 class FunkyGPS
     class Map
-        # A Track is a list of coordinates and has a name
+        # A Track is a list of coordinates and has a name. The {Map} can have multiple Tracks and one is set as the activeTrack.
         class Track
-            attr_reader :trackpoints, :name
-            # @return [Boolean] currentTrack Is this the current track?
+            # @return [Array<Point>] points All the points in this Track in order from start to finish
+            attr_reader :points
+            # @return [String] name The name of the track
+            attr_reader :name
+            # @return [Boolean] activeTrack Is this the current track we are using on the map?
             attr_accessor :activeTrack
-            # @param [Array<Trackpoint>] trackpoints All trackpoints tha belong to this track
 
-            def initialize(trackpoints:, name:)
+            # @param [String] name The name of the track
+            # @param [Array<Point>] points All points that belong to this track
+            def initialize(points:, name:)
                 @name = name
                 @activeTrack = false
-                @trackpoints = trackpoints
+                @points = points
             end
 
             # Calculates the total distance of the track
             # @return [Integer] distance in the current {FunkyGPS::DEFAULTMETRICS}
             def distance
                 distance = 0
-                @trackpoints.each_cons(2){|tp1, tp2| distance += tp1.distanceTo(other:tp2)}
+                @points.each_cons(2){|tp1, tp2| distance += tp1.distanceTo(point:tp2)}
                 distance
             end
 
-            # Replace the trackpoints
-            def replaceTrackpoints(trackpoints:)
-                @trackpoints = trackpoints
+            # Replace the points
+            # @param [Array<Point>] points The list of points to use to replace the points
+            def setPoints(points:)
+                @points = points
             end
 
-            # @return [Integer] nr of trackpoints in track
-            def nrOfTrackpoints
-                @trackpoints.length
+            # @return [Integer] nr of points in track
+            def nr_of_points
+                @points.length
             end
 
-            # Clears all trackpoints of track
+            # Clears all points of track
             def clearTrack
-                @trackpoints = []
+                @points = []
             end
 
-            # Find the trackpoint in the track that lies the nearest to other:
-            # @param [Trackpoint] other The trackpoint (the gps) to calculate the distance to
-            # @return [Trackpoint] The trackpoint in the track that is the closest to other:
-            # @todo keep track direction in mind and passed trackpoints
-            def nearestTrackpointTo(other:)
-                @trackpoints.min{|tp| tp.distanceTo(other: other)}
+            # Find the point in the track that lies the nearest to point:
+            # @param [Point] point The {Point} to calculate the distance to
+            # @return [Point] The {Point} in the track that is the closest to point:
+            # @todo keep track direction in mind and passed points
+            def nearest_point_to(point:)
+                @points.min{|tp| tp.distanceTo(point: point)}
             end
 
             # @return [Integer] The total distance of the track in meters
@@ -57,14 +62,14 @@ class FunkyGPS
             # Adds a GPS coordinate to the track list
             # @example Add a signal to the list
             #   gps.activeTrack.clearSignal
-            #   gps.activeTrack.nrOfTrackpoints #=> 0
+            #   gps.activeTrack.nr_of_points #=> 0
             #   gps.activeTrack.addCoordinate(coordinate:FunkyGPS::Map::Coordinate.new(lat:0,lng:0))
-            #   gps.activeTrack.nrOfTrackpoints #=> 1
+            #   gps.activeTrack.nr_of_points #=> 1
             def addCoordinate(coordinate:, at:nil)
                 if at
-                    @trackpoints.insert(at, coordinate)
+                    @points.insert(at, coordinate)
                 else
-                    @trackpoints << coordinate
+                    @points << coordinate
                 end
             end
 
@@ -78,8 +83,8 @@ class FunkyGPS
             # @param [String] pathparams The extra attributes to add to the path
             # @return the track as svg (path) to place on the svg canvas
             def to_svg(rotate:nil, pathparams:nil)
-                trackpoints = @trackpoints.map{|tp| %{#{tp.displayX} #{tp.displayY}}}.join(' ')
-                %{<g#{rotate ? %{ transform="translate(#{rotate[:x]}, #{rotate[:y]}) rotate(#{rotate[:degrees]}) translate(-#{rotate[:x]}, -#{rotate[:y]})"}:%{}}><path d="M #{trackpoints}" style="fill:none;stroke:black" #{pathparams||FunkyGPS::ACTIVETRACKLINEPARAMS}/></g>\n}
+                pointlist = @points.map{|tp| %{#{tp.displayX} #{tp.displayY}}}.join(' ')
+                %{<g#{rotate ? %{ transform="translate(#{rotate[:x]}, #{rotate[:y]}) rotate(#{rotate[:degrees]}) translate(-#{rotate[:x]}, -#{rotate[:y]})"}:%{}}><path d="M #{pointlist}" style="fill:none;stroke:black" #{pathparams||FunkyGPS::ACTIVETRACKLINEPARAMS}/></g>\n}
             end
         end
     end
