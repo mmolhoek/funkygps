@@ -148,6 +148,8 @@ bundle exec rake yarn
 bundle exec irb -r ./lib/funkygps
 # or, for example, create a animated gif of a track with
 $ echo "gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7' }, file: './tracks/track1.gpx'); gps.map.setActiveTrack(name: 'track 1'); gps.signal.simulateToGif; STDOUT.puts 'done'" |bundle exec irb -r ./lib/funkygps
+# or
+$ echo "gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7' }, file: './tracks/track1.gpx'); gps.map.setActiveTrack(name: 'track 1');gps.signal.copyTrackPointsToSignal(name:'track 1'); gps.signal.simulateToGif; STDOUT.puts 'done'" |bundle exec irb -r ./lib/funkygps
 ```
 ## Contributing to funkygps
 

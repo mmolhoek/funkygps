@@ -2,6 +2,8 @@ class FunkyGPS
     class Map
         # A Track is a list of coordinates and has a name. The {Map} can have multiple Tracks and one is set as the activeTrack.
         class Track
+            # @return [Map] map The map
+            attr_reader :map
             # @return [Array<Point>] points All the points in this Track in order from start to finish
             attr_reader :points
             # @return [String] name The name of the track
@@ -11,10 +13,21 @@ class FunkyGPS
 
             # @param [String] name The name of the track
             # @param [Array<Point>] points All points that belong to this track
-            def initialize(points:, name:)
+            def initialize(map:nil, points:, name:)
+                @map = map if map
                 @name = name
                 @activeTrack = false
                 @points = points
+            end
+
+            # @return [Point] The first point on the track that is not passed yet
+            def nextPoint
+                @points.find{|point| not point.passed}
+            end
+
+            # @param [Map] map Set the map
+            def setMap(map:)
+                @map = map
             end
 
             # Calculates the total distance of the track
@@ -28,7 +41,7 @@ class FunkyGPS
             # Replace the points
             # @param [Array<Point>] points The list of points to use to replace the points
             def setPoints(points:)
-                @points = points
+                @points = points.deep_clone
             end
 
             # @return [Integer] nr of points in track
@@ -46,7 +59,14 @@ class FunkyGPS
             # @return [Point] The {Point} in the track that is the closest to point:
             # @todo keep track direction in mind and passed points
             def nearest_point_to(point:)
+                STDERR.puts @points.map{|tp| tp.distanceTo(point: point).round}.inspect if FunkyGPS::VERBOSE
                 @points.min{|tp| tp.distanceTo(point: point)}
+            end
+
+            # @param [Point] point The {Point} to calculate the distance to
+            # @return [Float] Distance to the next point to pass
+            def distance_to_next_point(point:)
+                nextPoint.distanceTo(point: point)
             end
 
             # @return [Integer] The total distance of the track in meters
@@ -71,12 +91,13 @@ class FunkyGPS
                 else
                     @points << coordinate
                 end
-            end
-
-            # Clones the track
-            # @return [Track] The cloned track
-            def clone
-                Marshal.load(Marshal.dump(self))
+                if @map
+                    if next_active_trackpoint = @map.activeTrack.nextPoint
+                        if next_active_trackpoint.distanceTo(point: coordinate) < FunkyGPS::ACTIVETRACKMINIMALDISTANCETOPOINT
+                            next_active_trackpoint.isPassed
+                        end
+                    end
+                end
             end
 
             # @param [Integer{0,365}] rotate The rotation the track should be printed. Used to put the map face forward to your direction

@@ -56,6 +56,14 @@ class FunkyGPS
             loader.load(map:self)
         end
 
+        # @return [Track] The track that matches the name or FunkyGPS::FunkyException::NoTrackFound
+        # # @param [String] name The track to find
+        def getTrack(name:)
+            track = @tracks.find { |tr| tr.name == name }
+            raise FunkyGPS::FunkyException::NoTrackFound unless track
+            track
+        end
+
         # Clear all tracks
         # @example Load gps file from test tracks folder
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
@@ -86,6 +94,8 @@ class FunkyGPS
             @tracks.each do |track|
                 track.activeTrack = track.name == name
             end
+            raise FunkyGPS::FunkyException::NoActiveTrackFound unless activeTrack
+            STDERR.puts "active strack selected. track has #{activeTrack.points.length} points" if FunkyGPS::VERBOSE
         end
 
         # Get the current Track
@@ -218,17 +228,17 @@ class FunkyGPS
         def distanceToTrackIndicator(coordinate:, distance:)
             signal = @funkygps.signal.lastPos
             heading = signal.bearingTo(point:coordinate) - @funkygps.signal.currenDirection
-            space =  (shortarrow(heading: heading) ? @viewbox.height : @viewbox.width) / 8 # / 2 to get half the screen, / 4 to get 4 equal parts = / 8
+            #space =  (shortarrow(heading: heading) ? @viewbox.height : @viewbox.width) / 8 # / 2 to get half the screen, / 4 to get 4 equal parts = / 8
+            space = @viewbox.height / 8
             startpoint = signal.endpoint(heading:heading, distance:space)
             finishpoint = startpoint.endpoint(heading:heading, distance:space)
             middle = startpoint.midpointTo(point:finishpoint)
             arrowarm1 = finishpoint.endpoint(heading:heading+135, distance:8)
             arrowarm2 = finishpoint.endpoint(heading:heading+225, distance:8)
-            %{<path d="M #{startpoint.displayX} #{startpoint.displayY} L #{finishpoint.displayX} #{finishpoint.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
+            #%{<path d="M #{startpoint.displayX} #{startpoint.displayY} L #{finishpoint.displayX} #{finishpoint.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
             %{<path d="M #{finishpoint.displayX} #{finishpoint.displayY} L #{arrowarm1.displayX} #{arrowarm1.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
             %{<path d="M #{finishpoint.displayX} #{finishpoint.displayY} L #{arrowarm2.displayX} #{arrowarm2.displayY}" style="fill:none;stroke:black" #{FunkyGPS::ACTIVETRACKDIRECTIONLINE} />} +
-            %{<text x="#{middle.displayX-20}" y="#{middle.displayY-20}" fill="black">#{distance.round}#{FunkyGPS::DEFAULTMETRICSLABEL} (#{heading})</text>}
-            #transform="translate(#{middle.displayX}, #{middle.displayY}) rotate(#{heading+90}) translate(-#{middle.displayX}, -#{middle.displayY})"
+            %{<text x="#{middle.displayX-20}" y="#{middle.displayY-20}" fill="black">#{distance.round}#{FunkyGPS::DEFAULTMETRICSLABEL}</text>}
         end
 
         # Create an SVG of the map. This includes the Signal, the Signals track history, the active track if visible and otherwise an indicator where the track is (direction and distance).
@@ -239,15 +249,16 @@ class FunkyGPS
             out << %{<svg xmlns="http://www.w3.org/2000/svg" version="1.1" stroke-width="#{@funkygps.menu.fullscreen ? '2' : '3'}" width="#{@funkygps.screen.width}px" height="#{@funkygps.screen.height}px" viewBox="#{@viewbox.viewboxSettings}">\n}
             out << @funkygps.signal.to_svg
             out << @funkygps.signal.trackhistory_to_svg
-            out << activeTrack.to_svg(rotate:{degrees: -(@funkygps.signal.currenDirection), x: @funkygps.signal.lastPos.displayX, y: @funkygps.signal.lastPos.displayY})
-            closest= activeTrack.nearest_point_to(point:@funkygps.signal.lastPos)
-            distance = closest.distanceTo(point: @funkygps.signal.lastPos)
+            out << activeTrack.to_svg(rotate: @funkygps.signal.rotateSettings)
+            #closest= activeTrack.nearest_point_to(point:@funkygps.signal.lastPos)
+            distance = activeTrack.distance_to_next_point(point: @funkygps.signal.lastPos)
             # are we not seeing the current track?
             if distance > (@viewbox.realWidth / 2)
                 STDERR.puts "track off screen, add pointer" if FunkyGPS::VERBOSE
-                out << distanceToTrackIndicator(coordinate:closest, distance: distance)
+                out << distanceToTrackIndicator(coordinate:activeTrack.nextPoint, distance: distance)
             end
-            out << @points.map { |wp| wp.to_svg }.join("\n")
+            out << @points.map { |points| points.to_svg(rotate: @funkygps.signal.rotateSettings) }.join("\n")
+            out << activeTrack.nextPoint.to_svg(rotate: @funkygps.signal.rotateSettings, description: 'next')
             out << %{</svg>}
             out
         end

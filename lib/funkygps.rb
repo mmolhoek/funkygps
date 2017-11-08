@@ -3,6 +3,7 @@ require_relative 'funkygps/signal'
 require_relative 'funkygps/screen'
 require_relative 'funkygps/menu'
 require_relative 'funkygps/map'
+require_relative 'funkygps/deepclone'
 
 # FunkyGPS, the svg gps application for RaspBerry Pi with PaPiRus display
 # @author Mischa Molhoek

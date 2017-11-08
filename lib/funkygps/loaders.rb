@@ -24,7 +24,7 @@ class FunkyGPS
             # which we use here to load them into the map
             def load(map:)
                 points.each do |point|
-                    # we link the map here so the individual loaders don't need to do it
+                    # we link the map here so the individual loaders don't need to do this
                     point.setMap(map: @map)
                     if at = point.description.to_s[/^me(\d*)/]
                         # Testing purpose: wp with name 'me1' and 'me2' is treated as gps signal
@@ -34,11 +34,12 @@ class FunkyGPS
                     end
                 end
                 tracks.each do |track|
-                    # We link the map here so the individual loaders don't need to do it
+                    # We link the map here so the individual loaders don't need to do this
+                    track.setMap(map: @map)
                     track.points.each{|coordinate| coordinate.setMap(map: @map)}
 
                     # If you name a track 'gps', It will be used as a fake gps signal
-                    # other wise if just loaded like a normal track
+                    # otherwise if just loaded like a normal track
                     if track.name == 'gps'
                         map.funkygps.signal.setTrack(track:track)
                     else

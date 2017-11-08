@@ -13,14 +13,22 @@ class FunkyGPS
             attr_reader :x
             # @return [Float] y The y-coordinate on the map
             attr_reader :y
+            # @return [Boolean] passed Is true when you have already passed this point with your GPS
+            attr_reader :passed
 
             # @param [Float] lat The latitude of the coordinate
             # @param [Float] lng The longitude of the coordinate
             # @param [Map] map optional map parameter
             def initialize(lat:, lng:, map:nil)
+                @passed = false
                 @map = map if map
                 @loc = Geokit::LatLng.new(lat, lng)
                 geo2mapCoordinates(loc: @loc)
+            end
+
+            # Is used by signal to tell we have passed this point of the track
+            def isPassed(passed: true)
+                @passed = passed
             end
 
             # @return [Geokit::LatLng] The Geokit::LatLng location
@@ -104,11 +112,12 @@ class FunkyGPS
             # Creates a svg representing the point as a dot with a text if description is given
             # @return [String] The svg representing the point with a text if description is given
             # @todo Make the text appear right or left depending of the available space on screen
-            def to_svg
-                out = %{<g><circle cx="#{displayX}" cy="#{displayY}" r="2" style="fill:none;stroke:black"/></g>\n}
-                if @description
-                    out << %{<text x="#{displayX-20}" y="#{displayY-20}" fill="black">#{@description}</text>}
+            def to_svg(rotate:nil, description: nil)
+                out = %{<g#{rotate ? %{ transform="translate(#{rotate[:x]}, #{rotate[:y]}) rotate(#{rotate[:degrees]}) translate(-#{rotate[:x]}, -#{rotate[:y]})"}:%{}}><circle cx="#{displayX}" cy="#{displayY}" r="2" style="fill:none;stroke:black"/>\n}
+                if description or @description
+                    out << %{<text x="#{displayX-20}" y="#{displayY-20}" fill="black">#{description || @description}</text>}
                 end
+                out << %{</g>\n}
                 out
             end
         end

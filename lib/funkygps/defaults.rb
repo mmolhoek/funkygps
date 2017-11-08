@@ -25,6 +25,9 @@ class FunkyGPS
     # @return [Integer] ACTIVETRACKDIRECTIONLINE How many degrees left and right of 0 and 180 off we have to be before short arrow kicks in
     ACTIVETRACKDIRECTIONDEGREEOFFSET=35
 
+    # @return [Integer] ACTIVETRACKDIRECTIONLINE How many degrees left and right of 0 and 180 off we have to be before short arrow kicks in
+    ACTIVETRACKMINIMALDISTANCETOPOINT=5
+
     # FunkyGPS base error
     class FunkyException < ::StandardError
         # FunkyGPS error that is raised when the gps file type is not supported

@@ -8,17 +8,16 @@ class FunkyGPS
         # @param [FunkyGPS] funkygps The main control center
         def initialize(funkygps:)
             @funkygps = funkygps
-            @map = @funkygps.map
-            @track = Map::Track.new(points: [], name: 'gps')
+            @track = Map::Track.new(map: @funkygps.map, points: [], name: 'gps')
         end
         # Set the track. This is used to fake a track as the signal. As if you received all track's points as gps signals
         def setTrack(track:)
-            @track = track
+            @track = track.deep_clone
         end
         # Clears the current track, returning that track
         # @return [Map::Track] The old trackdata, before the clearing
-        def clearTrack
-            previousTrack = @track.clone
+        def clearSignal
+            previousTrack = @track.deep_clone
             @track.clearTrack
             previousTrack
         end
@@ -65,6 +64,13 @@ class FunkyGPS
             end
         end
 
+        # You can use this to use any track as a fake gps signal.
+        # @param [String] name The name of the track to use as fake signal
+        def copyTrackPointsToSignal(name:)
+            @track.setPoints(points:@funkygps.map.getTrack(name: name).points)
+            @track.points.each{|p| p.isPassed(passed: false)}
+        end
+
         # Simulate a track by moving from start to end points
         # at a x ms interval, creating an animated gif of the result
         # @example Simulate to an animated gif name track.gif
@@ -80,28 +86,27 @@ class FunkyGPS
         #   gps.map.setActiveTrack(track:'name of track')
         #   gps.signal.simulateToGif(delay: 500)
         def simulateToGif(name: 'track.gif', delay: 100)
-            STDERR.puts "creating gif animation of track '#{track.name}' with #{track.nrOfPoints} points to #{name} with #{delay} delay" if FunkyGPS::VERBOSE
+            STDERR.puts "creating gif animation of track '#{track.name}' with #{track.nr_of_points} points to #{name} with #{delay} delay" if FunkyGPS::VERBOSE
             list = Magick::ImageList.new
             # tempTrack is used to restore the track when the simulation is finished
-            tempTrack = clearTrack
+            STDERR.puts "track has #{@track.points.length} points, we will add points so no point is furter than 15 meters apart" if FunkyGPS::VERBOSE
             # the points of this track, but split into chunks of max 15 meter
-            STDERR.puts "nr points before splitPoints:#{tempTrack.points.length}" if FunkyGPS::VERBOSE
-            points = splitPoints(points:tempTrack.points, distance: 15)
-            STDERR.puts "nr points:#{points.length}" if FunkyGPS::VERBOSE
+            points = splitPoints(points:@track.points, distance: 15)
+            STDERR.puts "track now has #{points.length} points, let's start the simulation" if FunkyGPS::VERBOSE
             # Start your engines...
             startpoint = points.shift
+            #create a second point close to startpoint to make the first image
             @track.addCoordinate(coordinate: startpoint)
             @track.addCoordinate(coordinate: startpoint.endpoint(heading:startpoint.bearingTo(point: points.first), distance: 5))
             list.read @funkygps.screen.to_image
-            points.each do |coordinate|
+            (1..points.length).each_with_index do |coordinate, index|
+                STDERR.puts "point #{index} of #{points.length}" if FunkyGPS::VERBOSE
                 @track.addCoordinate(coordinate: points.shift)
                 list.read @funkygps.screen.to_image
             end
             # add the delay between images
             list.each {|image| image.delay = delay } if delay
             list.write(name)
-            # Restore track
-            @track.setPoints(points: tempTrack.points) if tempTrack.points
         end
 
         # Simulate a track by moving from start to end points
@@ -112,9 +117,9 @@ class FunkyGPS
         #   gps.signal.simulate(track:'track 1')
         def simulate(track:)
             # tempTrack is used to restore the track when the simulation is finished
-            tempTrack = clearTrack
+            tempTrack = clearSignal
             # our track to simultae
-            simTrack = tempTrack.clone
+            simTrack = tempTrack.deep_clone
             # Start your engines...
             @track.addCoordinate(coordinate: simTrack.points.shift)
             simTrack.points.each do |coordinate|
@@ -128,7 +133,7 @@ class FunkyGPS
         # Draw the GPS track as dotted line.
         # @return [String] The svg that represents track of the gps
         def trackhistory_to_svg
-            @track.to_svg(rotate:{degrees:-currenDirection, x: lastPos.displayX, y: lastPos.displayY}, pathparams: FunkyGPS::GPSSIGNALTRACKLINEPARAMS)
+            @track.to_svg(rotate:rotateSettings, pathparams: FunkyGPS::GPSSIGNALTRACKLINEPARAMS)
         end
 
         # Draws a dot on the last know location and a line from that location
@@ -141,6 +146,11 @@ class FunkyGPS
             out << %{<path d="M #{lastPos.displayX} #{lastPos.displayY} L #{endpoint.displayX} #{endpoint.displayY}" style="fill:none;stroke:black" stroke-dasharray="5, 3" />}
             out << %{</g>}
             out
+        end
+
+        # @return [Object] Rotation parameters
+        def rotateSettings
+           {degrees: -currenDirection, x: lastPos.displayX, y: lastPos.displayY}
         end
     end
 end
