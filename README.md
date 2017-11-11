@@ -21,19 +21,27 @@ so you can ssh right onto your pi after first boot.
 ## installing the dependencies (on the Pi):
 ```bash
 ssh pi@raspberrypi #or whatever name you gave it in PiBakery
-# check which ones are needed: sudo apt-get install git python-imaging python-smbus bc i2c-tools python-dateutil fonts-freefont-ttf -y
-sudo apt-get install git bc i2c-tools fonts-freefont-ttf imagemagick -y
+# start with updating all packages (keep your system up to date and security holes closed). takes about 5 mins, so get a coffee
+$ sudo apt-get update && sudo apt-get dist-upgrade
+# now reboot to activate the new kernel if it got upgraded and ssh to you pi again
+$ sudo reboot
+```
+- check which ones are needed: sudo apt-get install git python-imaging python-smbus bc i2c-tools python-dateutil fonts-freefont-ttf -y
+Install some apps we need. **git** to get and recompile the display driver (we will explain later how and why), **imagemagick, libmagickcore-dev and libmagickwand-dev** as funkygps uses imagemagick to convert svg into images and with the help of a gem called papirus (we will install it later) to send this image to the display.  **ruby** as funkygps is written in ruby. **libfuse-dev** as that is used by the display. **ruby-dev** is needed for the rmagick gem that we will install later on.
+```bash
+sudo apt-get install git imagemagick libmagickcore-dev libmagickwand-dev ruby ruby-dev libfuse-dev -y
 
 # also enable the SPI and the I2C interfaces. and set the timezone if you did not do that in PiBakery already
 sudo raspi-config
-
-# Install fuse driver which is used by the PaPiRus display driver
-sudo apt-get install libfuse-dev -y
+# set the following options
+# Boot Options > Wait for Network at Boot > No
+# Localisation Options > Change Timezone > <your timezone>
+# Interfacing Options > SPI > Yes
+# Interfacing Options > I2C > Yes
 ```
 
-After a first auto install setup of the display (don't install this one, read on) [driver](https://github.com/PiSupply/PaPiRus.git) to test if the screen was working,
-I found out that both the PaPiRus and the GPS use pin 10 (gpio 16) and pin 08 (gpio 15), the UART ports luckely we can compile the PaPiRus driver,
-telling it we want it to use other pins, which is not used by the PaPiRus yet and not used by the GPS. Let's do this now.
+I found out that both the PaPiRus and the GPS use pin 10 (gpio 16) and pin 08 (gpio 15), Luckely we can compile the PaPiRus driver,
+telling it we want it to use other pins, which are not used by the PaPiRus yet and also not used by the GPS. Let's do this now.
 
 ## build the PaPiRus driver from source
 ```bash
@@ -69,13 +77,29 @@ sudo systemctl start epd-fuse
 
 set the screen size (1.44 | 1.9 | 2.0 | 2.6 | 2.7) (2.7 in my case)
 ```bash
-sudo papirus-set 2.7
+# stop the fuse driver
+sudo systemctl stop epd-fuse
+# edit the drivers config file in you fav editor (vi in my case), remove the # from the line that start with #EPD_SIZE and add your display size.
+sudo vi /etc/default/epd-fuse
+# start the driver again
+sudo systemctl start epd-fuse
 ```
 
-Now that all driver stuff is done, you should test if it is all functioning correctly.
+Now that all driver stuff is done, you should test if it is all functioning correctly. To do this we install a little ruby gem that can talk to the display. we need the gem anyway for our the funkygps to work, and we can use it to test the screen. let's go:
 
-Have a look at the Ruby display driver [gem papirus](https://github.com/mmolhoek/papirus), that I created prior to this project to be able to talk to the driver from Ruby.
-Try loading an image as explained [here](https://github.com/mmolhoek/papirus#playing-with-rmagic). If this works, you are ready to move on.
+```bash
+# Install the gem's rmagick to talk to imagemagick from ruby and papirus to talk to the display from ruby
+sudo gem install rmagick papirus --no-doc
+# Start an interactive ruby session
+irb
+require 'papirus'
+display = PaPiRus::Display.new()
+display.clear
+```
+
+This should clear the screen by making it black and then white again. If that happens, your set to continue with installing funkygps
+
+
 
 FunkyGPS also uses this gem internally to update the display as it goes.
 
@@ -85,7 +109,7 @@ After your sure the display is up and running, Lets move on to using FunkyGPS
 
 ```bash
 $ ssh raspberry
-$ sudo gem install funkygps
+$ sudo gem install papirus rmagick funkygps --no-doc
 ```
 ## usage examples
 
@@ -147,9 +171,8 @@ bundle exec rake yarn
 # Start a irb session
 bundle exec irb -r ./lib/funkygps
 # or, for example, create a animated gif of a track with
-$ echo "gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7' }, file: './tracks/track1.gpx'); gps.map.setActiveTrack(name: 'track 1'); gps.signal.simulateToGif; STDOUT.puts 'done'" |bundle exec irb -r ./lib/funkygps
-# or
 $ echo "gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7' }, file: './tracks/track1.gpx'); gps.map.setActiveTrack(name: 'track 1');gps.signal.copyTrackPointsToSignal(name:'track 1'); gps.signal.simulateToGif; STDOUT.puts 'done'" |bundle exec irb -r ./lib/funkygps
+# where you first select the track, then copy the same track to use as fake gps signal and then simulate that signal
 ```
 ## Contributing to funkygps
 
