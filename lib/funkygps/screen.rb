@@ -44,7 +44,7 @@ class FunkyGPS
         def update
             raise NoMapFound, "your have to load a gps track first" unless funkygps.map
             #show it on the PaPiRus display
-            @display.show(to_bit_stream, 'P')
+            @display.show(data:to_bit_stream, command: 'P')
         end
 
         def width
