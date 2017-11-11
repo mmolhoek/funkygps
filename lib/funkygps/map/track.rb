@@ -38,10 +38,15 @@ class FunkyGPS
                 distance
             end
 
-            # Replace the points
-            # @param [Array<Point>] points The list of points to use to replace the points
-            def setPoints(points:)
-                @points = points.deep_clone
+            # replace the points
+            # @param [array<point>] points the list of points to use to replace the points
+            def setpoints(points:)
+                @points = points.map{|p| p}
+            end
+
+            # @return [array<point>] points the list of points (cloned)
+            def getpoints
+                @points.map{|p| p}
             end
 
             # @return [Integer] nr of points in track
@@ -94,11 +99,38 @@ class FunkyGPS
                 if @map
                     if next_active_trackpoint = @map.activeTrack.nextPoint
                         if next_active_trackpoint.distanceTo(point: coordinate) < FunkyGPS::ACTIVETRACKMINIMALDISTANCETOPOINT
-                            next_active_trackpoint.isPassed
+                            next_active_trackpoint.passed = true
                         end
                     end
                 end
             end
+
+            # Resets all passed flags back to false
+            def resetpassedflags
+                @points.each{|p| p.passed = false}
+            end
+
+            # @return [Array<Point>] all points, but with added points in such a way that no individual distance between two point is larger then distance:
+            # @param [Integer] (30) distance If two sequential points have a distance between them larger then this, a Coordinate will be added in the middle of them
+            # @param [Array<Point>] points Points to split, if empty the current trackpoints are used
+            def splitPoints(points:nil, distance: 30)
+                (points || @points).each_slice(2).map { |point1, point2| splitPointsUntilSmallerThen(point1: point1, point2: point2, distance: distance) }.flatten
+            end
+
+            #Split two points, adding a point in the middle if distance is longer than distance:
+            #@param [Coordinate] point1 The first point
+            #@param [Coordinate] point2 The second point
+            # @param [Integer] distance If the points have a distance between them larger then this, a Coordinate will be added in the middle of them
+            def splitPointsUntilSmallerThen(point1:, point2:, distance:)
+                return point1 unless point2 #last point in uneven track is empty
+                if point1.distanceTo(point:point2) > distance
+                    # return the split set, but split them as well if there are still longer distances
+                    return splitPoints(points: [point1, point1.midpointTo(point:point2), point2], distance: distance)
+                else
+                    return [point1, point2]
+                end
+            end
+
 
             # @param [Integer{0,365}] rotate The rotation the track should be printed. Used to put the map face forward to your direction
             # @param [String] pathparams The extra attributes to add to the path

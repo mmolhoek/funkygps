@@ -14,7 +14,7 @@ class FunkyGPS
             # @return [Float] y The y-coordinate on the map
             attr_reader :y
             # @return [Boolean] passed Is true when you have already passed this point with your GPS
-            attr_reader :passed
+            attr_accessor :passed
 
             # @param [Float] lat The latitude of the coordinate
             # @param [Float] lng The longitude of the coordinate
@@ -24,11 +24,6 @@ class FunkyGPS
                 @map = map if map
                 @loc = Geokit::LatLng.new(lat, lng)
                 geo2mapCoordinates(loc: @loc)
-            end
-
-            # Is used by signal to tell we have passed this point of the track
-            def isPassed(passed: true)
-                @passed = passed
             end
 
             # @return [Geokit::LatLng] The Geokit::LatLng location
