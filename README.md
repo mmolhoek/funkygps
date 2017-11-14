@@ -23,6 +23,7 @@ so you can ssh right onto your pi after first boot.
 ssh pi@raspberrypi #or whatever name you gave it in PiBakery
 # start with updating all packages (keep your system up to date and security holes closed). takes about 5 mins, so get a coffee
 $ sudo apt-get update && sudo apt-get dist-upgrade
+$ sudo dpkg-reconfigure locales
 # now reboot to activate the new kernel if it got upgraded and ssh to you pi again
 $ sudo reboot
 ```
@@ -38,6 +39,7 @@ sudo raspi-config
 # Localisation Options > Change Timezone > <your timezone>
 # Interfacing Options > SPI > Yes
 # Interfacing Options > I2C > Yes
+# Interfacing Options > Serial > No and Yes
 ```
 
 I found out that both the PaPiRus and the GPS use pin 10 (gpio 16) and pin 08 (gpio 15), Luckely we can compile the PaPiRus driver,
@@ -89,7 +91,7 @@ Now that all driver stuff is done, you should test if it is all functioning corr
 
 ```bash
 # Install the gem's rmagick to talk to imagemagick from ruby and papirus to talk to the display from ruby
-sudo gem install rmagick papirus --no-doc
+NOKOGIRI_USE_SYSTEM_LIBRARIES=true sudo gem install rmagick papirus geokit nokogiri --no-doc
 # Start an interactive ruby session
 irb
 require 'papirus'
@@ -98,6 +100,17 @@ display.clear
 ```
 
 This should clear the screen by making it black and then white again. If that happens, your set to continue with installing funkygps
+
+## Setting up the GPS on your py zero using the uart, not the serial
+edit /boot/config.txt and add/change the line enable_uart=0 to enable_uart=1 (make sure it does not have the # infront...)
+sudo systemctl stop gpsd.socket
+sudo systemctl disable gpsd.socket
+reboot
+#alway have to start like this when rebooted
+sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
+cgps -s
+
+gem install nmea_plus
 
 
 
@@ -173,6 +186,7 @@ bundle exec irb -r ./lib/funkygps
 # or, for example, create a animated gif of a track with
 $ echo "gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, height: 176, panel: 'EPD 2.7' }, file: './tracks/track1.gpx'); gps.map.setActiveTrack(name: 'track 1');gps.signal.copyTrackPointsToSignal(name:'track 1'); gps.signal.simulateToGif; STDOUT.puts 'done'" |bundle exec irb -r ./lib/funkygps
 # where you first select the track, then copy the same track to use as fake gps signal and then simulate that signal
+# gps = FunkyGPS.new(file: './tracks/track_direction_test.gpx'); gps.map.setActiveTrack(name: 'track'); gps.signal.simulate
 ```
 ## Contributing to funkygps
 
