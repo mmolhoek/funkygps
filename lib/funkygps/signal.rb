@@ -2,9 +2,12 @@ class FunkyGPS
     # The Signal class holds all info received from the hardware GPS
     # it will store all received GPS Coordinates in its @attr(track) list
     class Signal
+        # @return [FunkyGPS] funkygps The main contoller instance
+        attr_reader :funkygps
         # @return [Map] map The map area containing all tracks, points, etc
+        attr_reader :map
         # @return [Map::Track] track The track received so for by the GPS
-        attr_reader :funkygps, :map, :track
+        attr_reader :track
         # @param [FunkyGPS] funkygps The main control center
         def initialize(funkygps:)
             @funkygps = funkygps
@@ -56,6 +59,7 @@ class FunkyGPS
         def simulateToGif(name: nil, delay: 100)
             STDERR.puts "creating gif animation of track '#{track.name}' with #{track.nr_of_points} points to #{name||track.name}.gif with #{delay} delay" if FunkyGPS::VERBOSE
             # imagelist that is used to create a gif
+            @funkygps.screen.clear
             list = Magick::ImageList.new
             # tempTrack is used to restore the track when the simulation is finished
             STDERR.puts "track has #{@track.points.length} points, we will add points so no point is furter than 15 meters apart" if FunkyGPS::VERBOSE

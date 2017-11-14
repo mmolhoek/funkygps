@@ -12,9 +12,9 @@ class FunkyGPS
         # @return [Array<Track>] tracks All currently available tracks
         attr_reader :tracks
         # @return [Array<Point>] points All currently available points
-        attr_reader :points #, :x, :y, :viewbox
-        # @note A point is a spot on the map with a name and optional icon representing a Point Of Intrest
+        attr_reader :points
         # @see http://www.gpsvisualizer.com/draw/ A track and points can be made with this free tool for example
+        # @param [FunkyGPS] funkygps The main control center
         def initialize(funkygps:)
             @funkygps = funkygps
             clearTracks

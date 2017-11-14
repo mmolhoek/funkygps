@@ -111,7 +111,7 @@ class FunkyGPS
             end
 
             # @return [Array<Point>] all points, but with added points in such a way that no individual distance between two point is larger then distance:
-            # @param [Integer] (30) distance If two sequential points have a distance between them larger then this, a Coordinate will be added in the middle of them
+            # @param [Integer] distance (30) If two sequential points have a distance between them larger then this, a Coordinate will be added in the middle of them
             # @param [Array<Point>] points Points to split, if empty the current trackpoints are used
             def splitPoints(points:nil, distance: 30)
                 (points || @points).each_slice(2).map { |point1, point2| splitPointsUntilSmallerThen(point1: point1, point2: point2, distance: distance) }.flatten
