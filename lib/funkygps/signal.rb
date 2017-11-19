@@ -1,3 +1,4 @@
+require 'gpsd_client'
 class FunkyGPS
     # The Signal class holds all info received from the hardware GPS
     # it will store all received GPS Coordinates in its @attr(track) list
@@ -8,17 +9,83 @@ class FunkyGPS
         attr_reader :map
         # @return [Map::Track] track The track received so for by the GPS
         attr_reader :track
+        # @return [Integer] speed The current speed
+        attr_reader :speed
         # @param [FunkyGPS] funkygps The main control center
-        def initialize(funkygps:)
+        # @param [Integer] interval The interval in seconds at which to poll the position of the gps hw. must be 10 or higher, defaults to 10
+        def initialize(funkygps:, interval: 10)
             @funkygps = funkygps
+            @interval = interval > 10 ? interval : 10
             @oldtracks = []
+            @speed = 0;
+            @gpsd = nil
+            @trackthread = nil
             @track = Map::Track.new(map: @funkygps.map, points: [], name: 'gps')
+        end
+
+        # Start requesting the position from the gps daemon every interval:
+        # seconds and add it to the @track. It also update the speed property
+        def start_tracking
+            clearSignal
+            @funkygps.screen.clear
+            @trackthread = Thread.start do
+                start_listining_to_gps
+                while true do
+                    if pos = get_gps_position
+                        @speed = pos[:speed].to_i
+                        @track.addCoordinate(coordinate:FunkyGPS::Map::Coordinate.new(lat:pos[:lat], lng:pos[:lon], time: pos[:time], speed:pos[:speed], altitude:pos[:alt], map: @funkygps.map))
+                        $stderr.print "new gps coordinate: lat:#{pos[:lat]}, lng:#{pos[:lon]} alt:#{pos[:alt]}, time: #{pos[:time]}, speed: #{pos[:speed]} \n" if FunkyGPS::VERBOSE
+                        if @track.points.length > 1
+                            @funkygps.screen.update
+                        end
+                    end
+                    sleep @interval
+                end
+            end
+        end
+
+        # Stop the listening loop and close the socket
+        def stop_tracking
+            Thread.kill(@trackthread)
+            stop_listining_to_gps
+            @funkygps.screen.clear
+        end
+
+        # Get the current gps position if possible
+        def get_gps_position
+            if @gpsd and @gpsd.started?
+                return @gpsd.get_position
+            else
+                STDERR.puts "failed to get gps position"
+                return nil
+            end
+        end
+
+        # Connect to gps deamon socket
+        def start_listining_to_gps
+            begin
+                @gpsd = GpsdClient::Gpsd.new unless @gpsd
+                @gpsd.start
+            rescue
+                STDERR.puts "#$!" if FunkyGPS::VERBOSE
+            end
+        end
+
+        # Close the gps deamon socket
+        def stop_listining_to_gps
+            begin
+                @gpsd.stop if @gpsd
+                @gpsd = nil
+            rescue
+                STDERR.puts "#$!" if FunkyGPS::VERBOSE
+            end
         end
 
         # Clears the current track, returning that track
         # @return [Map::Track] The old trackdata, before the clearing
         def clearSignal
-            @oldtracks.push(@track.getpoints)
+            previouspoints = @track.getpoints
+            @oldtracks.push(previouspoints) if previouspoints.length > 0
             @track.clearTrack
         end
 
@@ -119,7 +186,7 @@ class FunkyGPS
         # @todo getting the speed from the GPS hw
         # @return [Integer] Current speed
         def speed
-            5
+            @speed
         end
         # Set the track. This is used to fake a track as the signal. As if you received all track's points as gps signals
         def setTrack(track:)

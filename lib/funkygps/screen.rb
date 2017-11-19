@@ -17,53 +17,55 @@ class FunkyGPS
             @funkygps = funkygps
             @current_layout = currentlayout
             @subscreens = [:map, :menu, :info]
-            create_layouts
         end
 
         # Creates all possible layouts
-        def create_layouts
+        def layouts
             #Struct.new :hi, :there
+            return @layouts if @layouts
             @layouts = {}
             @layouts[:fullscreen] = {}
+            @layouts[:fullscreen][:map] = {}
             @layouts[:fullscreen][:map][:x] = 0
             @layouts[:fullscreen][:map][:y] = 0
             @layouts[:fullscreen][:map][:width] = @funkygps.screen.width
             @layouts[:fullscreen][:map][:height] = @funkygps.screen.height
+            @layouts
         end
 
         # @return [Integer] The x of the specified screen
         # @param [Label] of The subscreen that you want to know the :x of
         def x(of:)
-            @layouts[@current_layout][of][:x]
+            layouts[@current_layout][of][:x]
         end
 
         # @return [Integer] The y of the specified screen
         # @param [Label] of The subscreen that you want to know the :y of
         def y(of:)
-            @layouts[@current_layout][of][:y]
+            layouts[@current_layout][of][:y]
         end
 
         # @return [Integer] The width of the specified screen
         # @param [Label] of The subscreen that you want to know the :width of
         def width(of:)
-            @layouts[@current_layout][of][:width]
+            layouts[@current_layout][of][:width]
         end
 
         # @return [Integer] The height of the specified screen
         # @param [Label] of The subscreen that you want to know the :height of
         def height(of:)
-            @layouts[@current_layout][of][:height]
+            layouts[@current_layout][of][:height]
         end
 
         # @return [Boolean] Is the subscreen screen: visible in the current layout?
         # @param [Label] screen The subscreen that you want to check
         def is_visible(screen:)
-            not @layouts[@current_layout][screen].nil?
+            not layouts[@current_layout][screen].nil?
         end
 
         # @return [Boolean] Is only the :map visible at this moment?
         def fullscreenmap
-            (@subscreens - [:map]).all?{|subscreen| @layouts[@current_layout][subscreen].nil?}
+            (@subscreens - [:map]).all?{|subscreen| layouts[@current_layout][subscreen].nil?}
         end
     end
 
@@ -98,7 +100,7 @@ class FunkyGPS
         def update
             raise NoMapFound, "your have to load a gps track first" unless funkygps.map
             #show it on the PaPiRus display
-            @display.show(data:to_bit_stream, command: 'P')
+            @display.show(data:to_bit_stream, command: 'F')
         end
 
         # Tells the PaPiRus display to clear its screen

@@ -19,7 +19,7 @@ class FunkyGPS
             # @param [Float] lat The latitude of the coordinate
             # @param [Float] lng The longitude of the coordinate
             # @param [Map] map optional map parameter
-            def initialize(lat:, lng:, map:nil)
+            def initialize(lat:, lng:, time: nil, speed: nil, altitude: nil, map:nil)
                 @passed = false
                 @map = map if map
                 @loc = Geokit::LatLng.new(lat, lng)
