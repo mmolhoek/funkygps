@@ -1,4 +1,5 @@
-require 'gpsd_client'
+require 'socket'
+require 'date'
 class FunkyGPS
     # The Signal class holds all info received from the hardware GPS
     # it will store all received GPS Coordinates in its @attr(track) list
@@ -12,72 +13,202 @@ class FunkyGPS
         # @return [Integer] speed The current speed
         attr_reader :speed
         # @param [FunkyGPS] funkygps The main control center
-        # @param [Integer] interval The interval in seconds at which to poll the position of the gps hw. must be 10 or higher, defaults to 10
-        def initialize(funkygps:, interval: 10)
+        def initialize(funkygps:, host: 'localhost', port: 2947)
             @funkygps = funkygps
-            @interval = interval > 10 ? interval : 10
             @oldtracks = []
             @speed = 0;
-            @gpsd = nil
+            @socket = nil
+            @socket_ready = false
+            @host = host
+            @port = port
             @trackthread = nil
+            @min_speed = 0.8 # speed needs to be higher than this to make the gps info count
+            @last = nil #last gps info
+            @sats = nil # last satellites info
             @track = Map::Track.new(map: @funkygps.map, points: [], name: 'gps')
         end
 
-        # Start requesting the position from the gps daemon every interval:
-        # seconds and add it to the @track. It also update the speed property
+        # Change the minimum speed to accept a gps update
+        def change_min_speed(speed:)
+            @min_speed = speed
+        end
+
+        # Start requesting the position from the gps daemon
+        # and add it to the @track. It also update the speed property
         def start_tracking
             clearSignal
             @funkygps.screen.clear
+
+            # background thread that is used to open the socket and wait for it to be ready
+            @socket_init_thread = Thread.start do
+                #open the socket
+                init_socket
+                while not @socket_ready
+                    #wait for it to be ready
+                    sleep 1
+                end
+                # it's ready, tell it to start watching and passing
+                puts "socket ready, start watching" if FunkyGPS::VERBOSE
+                @socket.puts '?WATCH={"enable":true,"json":true}'
+            end
+
+            # background thead that is used to read info from the socket and use it
             @trackthread = Thread.start do
-                start_listining_to_gps
                 while true do
-                    if pos = get_gps_position
-                        @speed = pos[:speed].to_i
-                        @track.addCoordinate(coordinate:FunkyGPS::Map::Coordinate.new(lat:pos[:lat], lng:pos[:lon], time: pos[:time], speed:pos[:speed], altitude:pos[:alt], map: @funkygps.map))
-                        $stderr.print "new gps coordinate: lat:#{pos[:lat]}, lng:#{pos[:lon]} alt:#{pos[:alt]}, time: #{pos[:time]}, speed: #{pos[:speed]} \n" if FunkyGPS::VERBOSE
-                        if @track.points.length > 1
-                            @funkygps.screen.update
-                        end
+                    begin
+                        read_from_socket
+                    rescue
+                        "error while reading socket: #{$!}" if FunkyGPS::VERBOSE
                     end
-                    sleep @interval
                 end
             end
         end
 
         # Stop the listening loop and close the socket
         def stop_tracking
-            Thread.kill(@trackthread)
-            stop_listining_to_gps
+            Thread.kill(@socket_init_thread) if @socket_init_thread
+            Thread.kill(@trackthread) if @trackthread
+            @socket_ready = false
+            close_socket
             @funkygps.screen.clear
         end
 
-        # Get the current gps position if possible
-        def get_gps_position
-            if @gpsd and @gpsd.started?
-                return @gpsd.get_position
-            else
-                STDERR.puts "failed to get gps position"
-                return nil
+        # initialize pgsd socket
+        def init_socket
+            begin
+                puts "init_socket" if FunkyGPS::VERBOSE
+                close_socket if @socket
+                @socket = TCPSocket.new(@host, @port)
+                @socket.puts("w+")
+                puts "reading socket..." if FunkyGPS::VERBOSE
+                welkom = JSON.parse(@socket.gets) rescue nil
+                puts "welkom: #{welkom.inspect}" if FunkyGPS::VERBOSE
+                @socket_ready = (welkom and welkom['class'] and welkom['class'] == 'VERSION')
+                puts "@socket_ready: #{@socket_ready.inspect}" if FunkyGPS::VERBOSE
+            rescue
+                @socket_ready = false
+                puts "#$!" if FunkyGPS::VERBOSE
             end
         end
 
-        # Connect to gps deamon socket
-        def start_listining_to_gps
+
+        def oldstuff
+            if pos = get_gps_position
+                $stderr.print "new gps coordinate: lat:#{pos[:lat]}, lng:#{pos[:lon]} alt:#{pos[:alt]}, time: #{pos[:time]}, speed: #{pos[:speed]} \n" if FunkyGPS::VERBOSE
+                if @track.points.length > 1
+                    @funkygps.screen.update
+                end
+            end
+        end
+
+        # Read from socket. this should happen in a Thread as a continues loop. It should try to read data from the socket but nothing might happen if the gps deamon might not be ready. If ready it will send packets that we read and proces
+        def read_from_socket
+            if @socket_ready
+                begin
+                    parse_socket_json(json: JSON.parse(@socket.gets.chomp))
+                rescue
+                    puts "error reading from socket: #{$!}" if FunkyGPS::VERBOSE
+                end
+            else
+                sleep 1
+            end
+        end
+
+        # Proceses json object returned by gpsd daemon. The TPV and SKY object
+        # are used the most as they give info about satellites used and gps locations
+        # @param [JSON] json The object returned by the daemon
+        def parse_socket_json(json:)
+            case json['class']
+            when 'DEVICE', 'DEVICES'
+                # devices that are found, not needed
+            when 'WATCH'
+                # gps deamon is ready and will send other packets, not needed yet
+            when 'TPV'
+                # gps position
+                #  "tag"=>"RMC",
+                #  "device"=>"/dev/ttyS0",
+                #  "mode"=>3,
+                #  "time"=>"2017-11-28T12:54:54.000Z",
+                #  "ept"=>0.005,
+                #  "lat"=>52.368576667,
+                #  "lon"=>4.901715,
+                #  "alt"=>-6.2,
+                #  "epx"=>2.738,
+                #  "epy"=>3.5,
+                #  "epv"=>5.06,
+                #  "track"=>198.53,
+                #  "speed"=>0.19,
+                #  "climb"=>0.0,
+                #  "eps"=>7.0,
+                #  "epc"=>10.12
+                if json['mode'] > 1
+                   #we have a 2d or 3d fix
+                    if is_new_measurement(json: json)
+                        ts = DateTime.parse(json['time'])
+                        puts "lat: #{json['lat']}, lng: #{json['lon']}, alt: #{json['alt']}, speed: #{json['speed']} at #{ts.to_s}, which is #{Time.now - ts.to_time} s old" if FunkyGPS::VERBOSE
+                        @track.addCoordinate(coordinate:FunkyGPS::Map::Coordinate.new(lat:json['lat'], lng:json['lon'], time: ts, speed:json['speed'], altitude:json['alt'], map: @funkygps.map))
+                        if @track.points.length > 2
+                            @funkygps.screen.update
+                        end
+                    end
+                end
+            when 'SKY'
+                # report on found satellites
+                sats = json['satellites']
+                if satellites_changed(sats: sats)
+                    puts "found #{sats.length} satellites, of which #{sats.count{|sat| sat['used']}} are used" if FunkyGPS::VERBOSE
+                end
+            else
+                puts "hey...found unknow tag: #{json.inspect}" if FunkyGPS::VERBOSE
+            end
+        end
+
+        # checks if the new satellites object return by the deamon is different enough compared
+        # to the last one, to use it
+        def satellites_changed(sats:)
+            if @sats.nil? or (@sats.length != sats.length or @sats.count{|sat| sat['used']} != sats.count{|sat| sat['used']})
+                @sats = sats
+                return true
+            end
+            return false
+        end
+
+        # checks if the new location object return by the deamon is different enough compared
+        # to the last one, to use it. it could be disregarded for example because the speed is to low, and you don't want to have the location jumping around when you stand still
+        def is_new_measurement(json:)
+            if @last.nil? or (@last['lat'] != json['lat'] and @last['lon'] != json['lon'] and json['speed'] > @min_speed)
+                @last = json
+                return true
+            end
+            return false
+        end
+
+        # This will tell the gps daemon we want to get the coordinates of
+        # any gps connected. when calling this we have to start reading
+        # the socket and keep reading it as otherwise the socket will overflow
+        # get closed by the daemon
+        def start_to_listen_socket
             begin
-                @gpsd = GpsdClient::Gpsd.new unless @gpsd
-                @gpsd.start
+                if @socket_ready
+                    @socket.puts '?WATCH={"enable":true,"json":true}'
+                    return true
+                end
             rescue
-                STDERR.puts "#$!" if FunkyGPS::VERBOSE
+                puts "#$!" if FunkyGPS::VERBOSE
+                return false
             end
         end
 
         # Close the gps deamon socket
-        def stop_listining_to_gps
+        def close_socket
             begin
-                @gpsd.stop if @gpsd
-                @gpsd = nil
+                if @socket
+                    @socket.puts '?WATCH={"enable":false}'
+                    @socket.close
+                end
+                @socket = nil
             rescue
-                STDERR.puts "#$!" if FunkyGPS::VERBOSE
+                puts "#$!" if FunkyGPS::VERBOSE
             end
         end
 
@@ -183,10 +314,9 @@ class FunkyGPS
             seconds * speed
         end
 
-        # @todo getting the speed from the GPS hw
         # @return [Integer] Current speed
         def speed
-            @speed
+            @track.points.last.speed
         end
         # Set the track. This is used to fake a track as the signal. As if you received all track's points as gps signals
         def setTrack(track:)

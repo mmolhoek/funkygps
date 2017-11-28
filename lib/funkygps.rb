@@ -19,10 +19,21 @@ class FunkyGPS
     # @return [Menu] menu The menu deals with external input like buttons and powerlevel and selecting settings and options
     attr_reader :menu
     # @param [Boolean] fullscreen Should we start fullscreen or show menu/info as well
+    # @example Basic usage: Load a track and start tracking
+    #   gps = FunkyGPS.new
+    #   gps.map.loadGPSFile(file:'./tracks/track_direction_test.gpx')
+    #   gps.map.setActiveTrack(name: 'track')
+    #   gps.signal.start_tracking
     # @example Basic usage: simulate on PaPiRus display
     #   gps = FunkyGPS.new
-    #   gps.map.loadGPSFilesFrom(folder:'./tracks/')
-    #   gps.map.simulate
+    #   gps.map.loadGPSFile(file:'./tracks/track_direction_test.gpx')
+    #   # Track_direction_test is made with http://www.gpsvisualizer.com/draw/. It contains two tracks.
+    #   # The first is called 'track', which is the planned trip.
+    #   # The second is called 'gps', FunkyGPS will use this one for the fake signal
+    #   gps.map.setActiveTrack(name: 'track')
+    #   # Set the track to be followed
+    #   gps.signal.simulateToGif
+    #   # Will create a track.gif, containing the trip
     # @param [Boolean] landscape Should screen be setup as landscape or portrait
     # @param [String] file The track(s)file that should be loaded
     # @param testdisplay[Hash] can be used write to fake the display

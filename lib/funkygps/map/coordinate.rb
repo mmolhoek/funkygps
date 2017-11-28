@@ -20,10 +20,16 @@ class FunkyGPS
             # @param [Float] lng The longitude of the coordinate
             # @param [Map] map optional map parameter
             def initialize(lat:, lng:, time: nil, speed: nil, altitude: nil, map:nil)
+                @speed = speed
                 @passed = false
                 @map = map if map
                 @loc = Geokit::LatLng.new(lat, lng)
                 geo2mapCoordinates(loc: @loc)
+            end
+
+            # @return [Float] The speed
+            def speed
+                @speed
             end
 
             # @return [Geokit::LatLng] The Geokit::LatLng location

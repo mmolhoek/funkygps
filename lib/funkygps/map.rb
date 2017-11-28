@@ -64,7 +64,7 @@ class FunkyGPS
             track
         end
 
-        # Clear all tracks
+        # Clear all tracks and all value caches
         # @example Load gps file from test tracks folder
         #   gps.map.loadGPSFile(file:'./tracks/track1.gpx')
         #   gps.map.tracks.length #=> 1
@@ -75,7 +75,9 @@ class FunkyGPS
             @y = nil
             @lats = nil
             @lons = nil
+            @maxLons = nil
             @minLons = nil
+            @maxLats = nil
             @minLats = nil
             @minX = nil
             @minY = nil
@@ -119,6 +121,7 @@ class FunkyGPS
 
         # Will return the width of the loaded map in meters
         # @return [Integer] The real width in meters of the map
+        # @example Getting the realwidth of a little reactangle
         def realWidth
             topLeft = Coordinate.new(lat:minLats, lng:minLons)
             topRight = Coordinate.new(lat:maxLats, lng:minLons)
