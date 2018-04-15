@@ -4,8 +4,8 @@ source "https://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 gem "geokit"
 gem "rmagick"
+gem "gpsd2json"
 gem "papirus"
-gem "gpsd_client"
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do

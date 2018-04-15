@@ -71,7 +71,11 @@ class FunkyGPS
             # @param [Point] point The {Point} to calculate the distance to
             # @return [Float] Distance to the next point to pass
             def distance_to_next_point(point:)
-                nextPoint.distanceTo(point: point)
+                if point = nextPoint
+                    point.distanceTo(point: point)
+                else
+                    return 0
+                end
             end
 
             # @return [Integer] The total distance of the track in meters

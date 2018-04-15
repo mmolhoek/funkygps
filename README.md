@@ -105,12 +105,14 @@ This should clear the screen by making it black and then white again. If that ha
 edit /boot/config.txt and add/change the line enable_uart=0 to enable_uart=1 (make sure it does not have the # infront...)
 sudo systemctl stop gpsd.socket
 sudo systemctl disable gpsd.socket
+# edit the crontab as root
+sudo crontab -e
+# and add the following line at the end
+@reboot /usr/sbin/gpsd /dev/ttyS0 -F /var/run/gpsd.sock
+#save and exit
 reboot
-#alway have to start like this when rebooted
-sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
+# Login and check if the GPS is functioning
 cgps -s
-
-gem install nmea_plus
 
 
 
@@ -126,7 +128,21 @@ $ sudo gem install papirus rmagick funkygps --no-doc
 ```
 ## usage examples
 
-you can also find examples in the bin folder of the gem
+```bash
+#start an irb session on your pi
+ssh raspberrypi
+irb
+gps = FunkyGPS.new
+#load a track you created with http://www.gpsvisualizer.com/draw/ and downloaded as gpx file in the tracks folder of the pi
+gps.map.loadGPSFile(file:'./tracks/track_direction_test.gpx')
+# activate the track
+gps.map.setActiveTrack(name: 'track')
+# when you start the tracking the screen will clear and the gps track is emptied as well.
+gps.signal.start_tracking
+#after about 10 seconds you should see track on your screen
+#when your want to stop:
+gps.signal.stop_tracking
+```
 
 ### Simultate a track on the PaPiRus display
 the gem has a test gpx (track) file in its tracks folder, which you can use to play with, or load your own gpx file
@@ -199,11 +215,12 @@ $ echo "gps = FunkyGPS.new(testdisplay: { epd_path: '/tmp/epd', width: 264, heig
 
 ## Todo's
 
-* testing by using yarndoc
 * zoom in/out.
-* distance iand direction to track if not near the track
-* intergration of actual GPS Signal
 * showing info about next 3 courners to come (distance, and turning degrees)
+
+## Extra points to mention
+
+* You can add extra wifi access points by editing /etc/wpa_supplicant/wpa_supplicant.conf
 
 ## Copyright
 
